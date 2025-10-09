@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 
-namespace EVDealerSys.DAL.Models;
+namespace PRN222.Ass2.EVDealerSys.Repositories.Context;
 
 public partial class EvdealerDbContext : DbContext
 {
@@ -69,6 +69,20 @@ public partial class EvdealerDbContext : DbContext
             entity.HasKey(d => d.Id);
         });
 
+        modelBuilder.Entity<Contract>(entity =>
+        {
+            entity.Property(l => l.CreatedAt)
+                  .HasDefaultValueSql("GETDATE()");
+        });
+
+        modelBuilder.Entity<TestDrive>(entity =>
+        {
+            entity.Property(l => l.CreatedAt)
+                  .HasDefaultValueSql("GETDATE()");
+            entity.Property(l => l.UpdatedAt)
+                  .HasDefaultValueSql("GETDATE()");
+        });
+
         modelBuilder.Entity<Customer>(entity =>
         {
             entity.ToTable("Customers");
@@ -107,6 +121,4 @@ public partial class EvdealerDbContext : DbContext
 
         base.OnModelCreating(modelBuilder);
     }
-
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
