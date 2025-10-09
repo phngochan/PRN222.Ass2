@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PRN222.Ass2.EVDealerSys.BusinessObjects\PRN222.Ass2.EVDealerSys.BusinessObjects.csproj" />
+    <ProjectReference Include="..\PRN222.Ass2.EVDealerSys.Repositories\PRN222.Ass2.EVDealerSys.Repositories.csproj" />
+  </ItemGroup>
+
+</Project>
