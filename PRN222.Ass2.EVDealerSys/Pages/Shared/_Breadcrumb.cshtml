@@ -1,0 +1,85 @@
+<!-- Breadcrumb Navigation Component -->
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    
+    var breadcrumbMap = new Dictionary<string, Dictionary<string, string>>
+    {
+        { "Home", new Dictionary<string, string> { { "Index", "Trang Chủ" }, { "Privacy", "Chính Sách Bảo Mật" } } },
+        { "Dashboard", new Dictionary<string, string> { { "Index", "Dashboard" }, { "Admin", "Dashboard Admin" }, { "Manager", "Dashboard Manager" }, { "Staff", "Dashboard Staff" } } },
+        { "User", new Dictionary<string, string> { { "Index", "Danh Sách User" }, { "Create", "Tạo User" }, { "Edit", "Chỉnh Sửa User" }, { "Details", "Chi Tiết User" }, { "Delete", "Xóa User" } } },
+        { "TestDrive", new Dictionary<string, string> { { "Index", "Lịch Thử Xe" }, { "Create", "Tạo Lịch" }, { "Edit", "Chỉnh Sửa Lịch" }, { "Details", "Chi Tiết Lịch" } } },
+        { "Customer", new Dictionary<string, string> { { "Index", "Danh Sách Khách Hàng" }, { "Create", "Tạo Khách Hàng" }, { "Edit", "Chỉnh Sửa" }, { "Details", "Chi Tiết" } } },
+        { "Vehicle", new Dictionary<string, string> { { "Index", "Kho Xe" }, { "Details", "Chi Tiết Xe" } } },
+        { "Orders", new Dictionary<string, string> { { "Index", "Đơn Hàng" }, { "Create", "Tạo Đơn" }, { "Details", "Chi Tiết Đơn" } } },
+        { "Account", new Dictionary<string, string> { { "Login", "Đăng Nhập" } } }
+    };
+    
+    string controllerName = controller ?? "Home";
+    string actionName = action ?? "Index";
+    string currentPage = breadcrumbMap.ContainsKey(controllerName) && breadcrumbMap[controllerName].ContainsKey(actionName) 
+        ? breadcrumbMap[controllerName][actionName] 
+        : actionName;
+}
+
+<nav aria-label="breadcrumb" class="ev-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a asp-controller="Home" asp-action="Index">
+                <i class="fas fa-home"></i> Trang Chủ
+            </a>
+        </li>
+        
+        @if (controllerName != "Home" || actionName != "Index")
+        {
+            @if (controllerName != "Home")
+            {
+                <li class="breadcrumb-item">
+                    <a asp-controller="@controller" asp-action="Index">@controllerName</a>
+                </li>
+            }
+            
+            @if (actionName != "Index")
+            {
+                <li class="breadcrumb-item active" aria-current="page">@currentPage</li>
+            }
+        }
+    </ol>
+</nav>
+
+<style>
+    .ev-breadcrumb {
+        background-color: transparent;
+        padding: 1rem 0;
+        margin-bottom: 1.5rem;
+    }
+    
+    .ev-breadcrumb .breadcrumb {
+        background-color: var(--ev-pale-green);
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        margin-bottom: 0;
+    }
+    
+    .ev-breadcrumb .breadcrumb-item a {
+        color: var(--ev-dark-green);
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    
+    .ev-breadcrumb .breadcrumb-item a:hover {
+        color: var(--ev-medium-green);
+        padding-left: 5px;
+    }
+    
+    .ev-breadcrumb .breadcrumb-item.active {
+        color: var(--ev-text-dark);
+        font-weight: 600;
+    }
+    
+    .ev-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+        content: "›";
+        color: var(--ev-medium-green);
+        font-weight: bold;
+    }
+</style>

@@ -3,6 +3,10 @@ using PRN222.Ass2.EVDealerSys.Repositories.Context;
 using PRN222.Ass2.EVDealerSys.Repositories.Interfaces;
 using PRN222.Ass2.EVDealerSys.Repositories.Implementations;
 using PRN222.Ass2.EVDealerSys.Repositories.Init;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using PRN222.Ass2.EVDealerSys.Services.Interfaces;
+using PRN222.Ass2.EVDealerSys.Services.Implementations;
+using PRN222.Ass2.EVDealerSys.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +42,21 @@ builder.Services.AddScoped<IDealerRepository, DealerRepository>();
 // Reports
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 
+// ========== 4. Services ==========
+builder.Services.AddScoped<IAuthService, AuthService>();
 
+// ========== Add Authen ==========
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+        options.SlidingExpiration = true;
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 // ========== Seed Database ==========
@@ -63,7 +81,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
+
 app.UseAuthorization();
+
+app.UseMiddleware<StartPageRedirectMiddleware>();
 
 app.MapRazorPages();
 
