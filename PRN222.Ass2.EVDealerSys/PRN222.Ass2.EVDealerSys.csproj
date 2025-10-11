@@ -22,8 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PRN222.Ass2.EVDealerSys.BusinessObjects\PRN222.Ass2.EVDealerSys.BusinessObjects.csproj" />
-    <ProjectReference Include="..\PRN222.Ass2.EVDealerSys.Services\PRN222.Ass2.EVDealerSys.Services.csproj" />
+    <ProjectReference Include="..\PRN222.Ass2.EVDealerSys.BLL\PRN222.Ass2.EVDealerSys.BLL.csproj" />
   </ItemGroup>
 
 </Project>

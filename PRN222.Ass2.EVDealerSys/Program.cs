@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using PRN222.Ass2.EVDealerSys.Repositories.Context;
-using PRN222.Ass2.EVDealerSys.Repositories.Interfaces;
-using PRN222.Ass2.EVDealerSys.Repositories.Implementations;
-using PRN222.Ass2.EVDealerSys.Repositories.Init;
+using PRN222.Ass2.EVDealerSys.DAL.Context;
+using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
+using PRN222.Ass2.EVDealerSys.DAL.Implementations;
+using PRN222.Ass2.EVDealerSys.DAL.Init;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using PRN222.Ass2.EVDealerSys.Services.Interfaces;
-using PRN222.Ass2.EVDealerSys.Services.Implementations;
+using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
+using PRN222.Ass2.EVDealerSys.BLL.Implementations;
 using PRN222.Ass2.EVDealerSys.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);

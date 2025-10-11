@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using PRN222.Ass2.EVDealerSys.Services.Interfaces;
+using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using System.Security.Claims;
 using PRN222.Ass2.EVDealerSys.Models;
 
