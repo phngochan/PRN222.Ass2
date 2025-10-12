@@ -1,7 +1,7 @@
-﻿using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
-using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
-using PRN222.Ass2.EVDealerSys.DAL.Context;
+using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.DAL.Base;
+using PRN222.Ass2.EVDealerSys.DAL.Context;
+using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
 
 namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
 {
@@ -51,7 +51,7 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
             }
             _context.SaveChanges();
         }
-        
+
         public Inventory? GetByVehicle(int vehicleId, int locationType = 1, int? dealerId = null)
         {
             return _context.Inventories

@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
 using PRN222.Ass2.EVDealerSys.DAL.Context;
 
 namespace PRN222.Ass2.EVDealerSys.DAL.Base;
-public class GenericRepository<T>: IGenericRepository<T> where T : class
+public class GenericRepository<T> : IGenericRepository<T> where T : class
 {
     protected readonly EvdealerDbContext _context;
     public GenericRepository(EvdealerDbContext context) => _context = context;

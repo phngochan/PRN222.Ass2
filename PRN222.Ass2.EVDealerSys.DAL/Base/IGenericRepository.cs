@@ -1,9 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace PRN222.Ass2.EVDealerSys.DAL.Base;
 public interface IGenericRepository<T> where T : class
 {

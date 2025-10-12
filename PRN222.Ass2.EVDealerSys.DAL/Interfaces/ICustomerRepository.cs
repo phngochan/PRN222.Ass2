@@ -3,7 +3,7 @@ using PRN222.Ass2.EVDealerSys.DAL.Base;
 
 namespace PRN222.Ass2.EVDealerSys.DAL.Interfaces
 {
-    public interface ICustomerRepository: IGenericRepository<Customer>
+    public interface ICustomerRepository : IGenericRepository<Customer>
     {
         Task<List<Customer>> SearchAsync(string? searchTerm, int? dealerId = null);
         Task<Customer?> GetByPhoneAsync(string phone);

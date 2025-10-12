@@ -1,4 +1,4 @@
-﻿namespace PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.Report
+namespace PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.Report
 {
     public class InventoryAllRowDto
     {

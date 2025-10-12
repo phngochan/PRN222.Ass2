@@ -1,8 +1,9 @@
-﻿using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
-using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
-using PRN222.Ass2.EVDealerSys.DAL.Context;
 using Microsoft.EntityFrameworkCore;
+
+using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.DAL.Base;
+using PRN222.Ass2.EVDealerSys.DAL.Context;
+using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
 
 namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
 {
@@ -78,7 +79,7 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
         {
             return await _context.Users
                 .Include(u => u.Dealer)
-                .Where(u => u.Name!.Contains(searchTerm) || 
+                .Where(u => u.Name!.Contains(searchTerm) ||
                            u.Email!.Contains(searchTerm) ||
                            u.Phone!.Contains(searchTerm))
                 .OrderBy(u => u.Name)

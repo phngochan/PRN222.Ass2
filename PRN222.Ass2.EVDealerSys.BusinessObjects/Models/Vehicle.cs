@@ -1,5 +1,3 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
 namespace PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 
 public partial class Vehicle
@@ -24,7 +22,7 @@ public partial class Vehicle
 
     public virtual ICollection<VehicleAllocation> VehicleAllocations { get; set; } = new List<VehicleAllocation>();
 
-  
+
 }
 
 

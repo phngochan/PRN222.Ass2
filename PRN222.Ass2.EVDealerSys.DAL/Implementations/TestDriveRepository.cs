@@ -1,8 +1,9 @@
-using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
-using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
-using PRN222.Ass2.EVDealerSys.DAL.Context;
 using Microsoft.EntityFrameworkCore;
+
+using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.DAL.Base;
+using PRN222.Ass2.EVDealerSys.DAL.Context;
+using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
 
 namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
 {
@@ -93,7 +94,7 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
         {
             testDrive.CreatedAt = DateTime.Now;
             testDrive.UpdatedAt = DateTime.Now;
-            
+
             _context.TestDrives.Add(testDrive);
             await _context.SaveChangesAsync();
             return testDrive;
@@ -102,7 +103,7 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
         public override async Task<TestDrive> UpdateAsync(TestDrive testDrive)
         {
             testDrive.UpdatedAt = DateTime.Now;
-            
+
             _context.TestDrives.Update(testDrive);
             await _context.SaveChangesAsync();
             return testDrive;
@@ -119,8 +120,8 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
                 return false;
 
             var query = _context.TestDrives
-                .Where(t => t.VehicleId == vehicleId 
-                    && t.ScheduledDate.HasValue 
+                .Where(t => t.VehicleId == vehicleId
+                    && t.ScheduledDate.HasValue
                     && t.ScheduledDate.Value.Date == date.Date
                     && t.Status != 4); // Not cancelled
 
@@ -131,9 +132,10 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
 
             var existingBookings = await query
                 .Where(t => t.StartTime.HasValue && t.EndTime.HasValue)
-                .Select(t => new { 
+                .Select(t => new
+                {
                     Id = t.Id,
-                    StartTime = t.StartTime!.Value.TimeOfDay, 
+                    StartTime = t.StartTime!.Value.TimeOfDay,
                     EndTime = t.EndTime!.Value.TimeOfDay,
                     Status = t.Status
                 })
@@ -165,11 +167,11 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
             var query = _context.TestDrives
                 .Include(t => t.Customer)
                 .Include(t => t.Vehicle)
-                .Where(t => t.VehicleId == vehicleId 
-                    && t.ScheduledDate.HasValue 
+                .Where(t => t.VehicleId == vehicleId
+                    && t.ScheduledDate.HasValue
                     && t.ScheduledDate.Value.Date == date.Date
                     && t.Status != 4 // Not cancelled
-                    && t.StartTime.HasValue 
+                    && t.StartTime.HasValue
                     && t.EndTime.HasValue);
 
             if (excludeId.HasValue)
@@ -179,9 +181,9 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
 
             var bookings = await query.ToListAsync();
 
-            return bookings.Where(booking => 
-                IsTimeSlotOverlap(startTime, endTime, 
-                    booking.StartTime!.Value.TimeOfDay, 
+            return bookings.Where(booking =>
+                IsTimeSlotOverlap(startTime, endTime,
+                    booking.StartTime!.Value.TimeOfDay,
                     booking.EndTime!.Value.TimeOfDay))
                 .ToList();
         }
@@ -203,7 +205,7 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 var term = searchTerm.ToLower();
-                query = query.Where(t => 
+                query = query.Where(t =>
                     (t.CustomerName != null && t.CustomerName.ToLower().Contains(term)) ||
                     (t.CustomerPhone != null && t.CustomerPhone.ToLower().Contains(term)) ||
                     (t.CustomerEmail != null && t.CustomerEmail.ToLower().Contains(term)));
@@ -241,7 +243,7 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
 
             var query = _context.TestDrives
                 .Where(t => t.UserId == userId.Value
-                    && t.ScheduledDate.HasValue 
+                    && t.ScheduledDate.HasValue
                     && t.ScheduledDate.Value.Date == date.Date
                     && t.Status != 4); // Not cancelled
 
@@ -252,9 +254,10 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
 
             var existingBookings = await query
                 .Where(t => t.StartTime.HasValue && t.EndTime.HasValue)
-                .Select(t => new { 
+                .Select(t => new
+                {
                     Id = t.Id,
-                    StartTime = t.StartTime!.Value.TimeOfDay, 
+                    StartTime = t.StartTime!.Value.TimeOfDay,
                     EndTime = t.EndTime!.Value.TimeOfDay,
                     Status = t.Status,
                     CustomerName = t.CustomerName
@@ -279,10 +282,10 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
                 .Include(t => t.Customer)
                 .Include(t => t.Vehicle)
                 .Where(t => t.UserId == userId
-                    && t.ScheduledDate.HasValue 
+                    && t.ScheduledDate.HasValue
                     && t.ScheduledDate.Value.Date == date.Date
                     && t.Status != 4 // Not cancelled
-                    && t.StartTime.HasValue 
+                    && t.StartTime.HasValue
                     && t.EndTime.HasValue);
 
             if (excludeId.HasValue)
@@ -292,9 +295,9 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
 
             var bookings = await query.ToListAsync();
 
-            return bookings.Where(booking => 
-                IsTimeSlotOverlap(startTime, endTime, 
-                    booking.StartTime!.Value.TimeOfDay, 
+            return bookings.Where(booking =>
+                IsTimeSlotOverlap(startTime, endTime,
+                    booking.StartTime!.Value.TimeOfDay,
                     booking.EndTime!.Value.TimeOfDay))
                 .ToList();
         }

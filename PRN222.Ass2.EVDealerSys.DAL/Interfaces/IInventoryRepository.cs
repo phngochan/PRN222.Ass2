@@ -3,7 +3,7 @@ using PRN222.Ass2.EVDealerSys.DAL.Base;
 
 namespace PRN222.Ass2.EVDealerSys.DAL.Interfaces
 {
-    public interface IInventoryRepository: IGenericRepository<Inventory>
+    public interface IInventoryRepository : IGenericRepository<Inventory>
     {
         // Query Methods
         Inventory? GetEvmStock(int vehicleId);

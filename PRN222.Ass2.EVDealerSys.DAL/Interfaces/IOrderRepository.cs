@@ -3,7 +3,7 @@ using PRN222.Ass2.EVDealerSys.DAL.Base;
 
 namespace PRN222.Ass2.EVDealerSys.DAL.Interfaces
 {
-    public interface IOrderRepository: IGenericRepository<Order>
+    public interface IOrderRepository : IGenericRepository<Order>
     {
         // CRUD Operations
         void Add(Order order);

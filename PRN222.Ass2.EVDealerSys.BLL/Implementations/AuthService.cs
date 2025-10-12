@@ -1,47 +1,41 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
+
+using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
-using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 
-namespace PRN222.Ass2.EVDealerSys.BLL.Implementations
+namespace PRN222.Ass2.EVDealerSys.BLL.Implementations;
+
+public class AuthService(IConfiguration configuration, IUserRepository userRepo) : IAuthService
 {
-    public class AuthService : IAuthService
+    private readonly IConfiguration _configuration = configuration;
+    private readonly IUserRepository _userRepo = userRepo;
+
+    public async Task<User?> AuthenticateAsync(string email, string password)
     {
-        private readonly IConfiguration _configuration;
-        private readonly IUserRepository _userRepo;
+        // Validate input
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            return null;
 
-        public AuthService(IConfiguration configuration, IUserRepository userRepo)
-        {
-            _configuration = configuration;
-            _userRepo = userRepo;
-        }
+        // Hash password if needed (currently using plain text)
+        // string hashedPassword = HashPassword(password);
 
-        public async Task<User?> AuthenticateAsync(string email, string password)
-        {
-            // Validate input
-            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-                return null;
+        // Authenticate user
+        var user = await _userRepo.Auth(email, password);
+        return user;
+    }
 
-            // Hash password if needed (currently using plain text)
-            // string hashedPassword = HashPassword(password);
+    public bool IsValidRole(int? role)
+    {
+        // Define valid roles (customize based on your requirements)
+        return role.HasValue && (role == 1 || role == 2 || role == 3);
+        // 1: Admin, 2: Manager, 3: Staff (example)
+    }
 
-            // Authenticate user
-            var user = await _userRepo.Auth(email, password);
-            return user;
-        }
-
-        public bool IsValidRole(int? role)
-        {
-            // Define valid roles (customize based on your requirements)
-            return role.HasValue && (role == 1 || role == 2 || role == 3);
-            // 1: Admin, 2: Manager, 3: Staff (example)
-        }
-
-        // Future: Add password hashing
-        private string HashPassword(string password)
-        {
-            // Implement password hashing (BCrypt, etc.)
-            return password; // Temporary
-        }
+    // Future: Add password hashing
+    private string HashPassword(string password)
+    {
+        // Implement password hashing (BCrypt, etc.)
+        return password; // Temporary
     }
 }

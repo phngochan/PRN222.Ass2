@@ -1,8 +1,9 @@
-﻿using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
-using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
-using PRN222.Ass2.EVDealerSys.DAL.Context;
 using Microsoft.EntityFrameworkCore;
+
+using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.DAL.Base;
+using PRN222.Ass2.EVDealerSys.DAL.Context;
+using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
 
 namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
 {
@@ -30,8 +31,8 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
         public IEnumerable<Order> GetByDealer(int dealerId)
         {
             return _context.Orders
-                .Include(o => o.Dealer)      
-                .Include(o => o.Customer)   
+                .Include(o => o.Dealer)
+                .Include(o => o.Customer)
                 .Include(o => o.OrderItems).ThenInclude(oi => oi.Vehicle)
                 .Include(o => o.Payments)
                 .Where(o => o.DealerId == dealerId)

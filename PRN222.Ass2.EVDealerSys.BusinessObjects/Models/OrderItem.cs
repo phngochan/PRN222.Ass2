@@ -1,4 +1,4 @@
-﻿namespace PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
+namespace PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 
 public partial class OrderItem
 {

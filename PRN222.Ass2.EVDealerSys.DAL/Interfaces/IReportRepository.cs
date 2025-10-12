@@ -1,4 +1,4 @@
-﻿using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.Report;
+using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.Report;
 
 namespace PRN222.Ass2.EVDealerSys.DAL.Interfaces
 {
