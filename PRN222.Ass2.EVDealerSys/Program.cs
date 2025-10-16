@@ -7,6 +7,7 @@ using PRN222.Ass2.EVDealerSys.DAL.Context;
 using PRN222.Ass2.EVDealerSys.DAL.Implementations;
 using PRN222.Ass2.EVDealerSys.DAL.Init;
 using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,6 +46,10 @@ builder.Services.AddScoped<IReportRepository, ReportRepository>();
 
 // ========== 4. Services ==========
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
 
 // ========== Add Authen ==========
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -58,6 +63,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 builder.Services.AddAuthorization();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 // ========== Seed Database ==========
@@ -87,6 +93,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseMiddleware<StartPageRedirectMiddleware>();
+
+app.MapHub<OrderHub>("/orderHub");
 
 app.MapRazorPages();
 
