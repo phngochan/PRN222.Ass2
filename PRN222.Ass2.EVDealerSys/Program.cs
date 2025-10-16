@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
+ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 using PRN222.Ass2.EVDealerSys.BLL.Implementations;
@@ -51,6 +51,8 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ITestDriveService, TestDriveService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDealerService, DealerService>();
 
 // ========== Add Authen ==========
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
