@@ -1,0 +1,142 @@
+@page "{id:int}"
+@model PRN222.Ass2.EVDealerSys.Pages.TestDrives.EditModel
+@{
+    ViewData["Title"] = "Chỉnh sửa lịch thử xe";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-edit"></i> Chỉnh sửa lịch thử xe
+        </h1>
+        <div>
+            <a asp-page="./Details" asp-route-id="@Model.Form.Id" class="btn btn-outline-info me-2">
+                <i class="fas fa-eye"></i> Xem chi tiết
+            </a>
+            <a asp-page="./Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-plus"></i> Thông tin chỉnh sửa
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <input type="hidden" asp-for="Form.Id" />
+                        <input type="hidden" asp-for="Form.CustomerId" />
+                        <input type="hidden" asp-for="Form.DealerId" />
+                        <input type="hidden" asp-for="Form.UserId" />
+
+                        <div class="mb-4">
+                            <h6 class="text-primary">
+                                <i class="fas fa-user"></i> Khách hàng
+                            </h6>
+                            <div class="alert alert-info mb-0">
+                                <strong>@Model.Form.CustomerName</strong><br />
+                                <span><i class="fas fa-phone"></i> @Model.Form.CustomerPhone</span><br />
+                                <span><i class="fas fa-envelope"></i> @Model.Form.CustomerEmail</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Form.VehicleId" class="form-label">
+                                        <i class="fas fa-car"></i> Chọn xe <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="Form.VehicleId" asp-items="Model.VehicleOptions" class="form-select"></select>
+                                    <span asp-validation-for="Form.VehicleId" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Form.ScheduledDate" class="form-label">
+                                        <i class="fas fa-calendar"></i> Ngày thử xe <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Form.ScheduledDate" type="date" class="form-control" />
+                                    <span asp-validation-for="Form.ScheduledDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Form.StartTime" class="form-label">
+                                        <i class="fas fa-clock"></i> Giờ bắt đầu <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Form.StartTime" type="time" class="form-control" />
+                                    <span asp-validation-for="Form.StartTime" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Form.EndTime" class="form-label">
+                                        <i class="fas fa-clock"></i> Giờ kết thúc <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Form.EndTime" type="time" class="form-control" />
+                                    <span asp-validation-for="Form.EndTime" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Form.Status" class="form-label">
+                                        <i class="fas fa-flag"></i> Trạng thái
+                                    </label>
+                                    <select asp-for="Form.Status" asp-items="Model.StatusOptions" class="form-select"></select>
+                                    <span asp-validation-for="Form.Status" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-info-circle"></i> Trạng thái hiện tại
+                                    </label>
+                                    <div class="alert alert-light border">
+                                        <span class="badge bg-@Model.GetStatusBadgeClass(Model.Form.Status)">
+                                            @Model.GetStatusName(Model.Form.Status)
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Form.Notes" class="form-label">
+                                <i class="fas fa-sticky-note"></i> Ghi chú
+                            </label>
+                            <textarea asp-for="Form.Notes" rows="3" class="form-control"
+                                      placeholder="Ghi chú thêm (tùy chọn)"></textarea>
+                            <span asp-validation-for="Form.Notes" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-page="./Index" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> Hủy bỏ
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

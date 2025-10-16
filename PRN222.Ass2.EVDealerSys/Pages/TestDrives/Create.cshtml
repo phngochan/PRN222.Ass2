@@ -1,0 +1,643 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.TestDrives.CreateModel
+@{
+    ViewData["Title"] = "Đặt lịch thử xe";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-plus"></i> Đặt lịch thử xe
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a asp-page="/Dashboard/Admin">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a asp-page="./Index">Quản lý lịch</a></li>
+                        <li class="breadcrumb-item active">Đặt lịch mới</li>
+                    </ol>
+                </nav>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script>
+        $(document).ready(function () {
+            const endpoints = {
+                checkPhone: '@Url.Page("./Create", pageHandler: "CheckPhone")',
+                checkEmail: '@Url.Page("./Create", pageHandler: "CheckEmail")',
+                searchCustomers: '@Url.Page("./Create", pageHandler: "SearchCustomers")'
+            };
+
+            function getVerificationToken() {
+                return $('input[name="__RequestVerificationToken"]').val();
+            }
+
+            let selectedCustomer = null;
+            let phoneCheckTimeout = null;
+            let emailCheckTimeout = null;
+
+            const customerNameInput = $('#Form_CustomerName');
+            const customerPhoneInput = $('#Form_CustomerPhone');
+            const customerEmailInput = $('#Form_CustomerEmail');
+
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const minDate = tomorrow.toISOString().split('T')[0];
+            $('#scheduledDate').attr('min', minDate);
+
+            if (!$('#startTime').val()) {
+                $('#startTime').val('09:00');
+            }
+            if (!$('#endTime').val()) {
+                $('#endTime').val('10:00');
+            }
+
+            $('input[name="customerMode"]').change(function () {
+                const mode = $(this).val();
+                if (mode === 'existing') {
+                    $('#existingCustomerSection').show();
+                    $('#newCustomerSection').hide();
+                    clearNewCustomerForm();
+                } else {
+                    $('#existingCustomerSection').hide();
+                    $('#newCustomerSection').show();
+                    clearSelectedCustomer();
+                }
+            });
+
+            customerPhoneInput.on('input', function () {
+                const phone = $(this).val().trim();
+
+                if (phoneCheckTimeout) {
+                    clearTimeout(phoneCheckTimeout);
+                }
+
+                if (phone.length >= 10) {
+                    phoneCheckTimeout = setTimeout(function () {
+                        $.post(endpoints.checkPhone, {
+                            phone: phone,
+                            __RequestVerificationToken: getVerificationToken()
+                        }).done(function (response) {
+                            if (response.exists) {
+                                $('#phoneValidationMessage')
+                                    .text('Số điện thoại này đã tồn tại. Vui lòng tìm kiếm khách hàng có sẵn.')
+                                    .removeClass('text-success')
+                                    .addClass('text-danger');
+                            } else {
+                                $('#phoneValidationMessage')
+                                    .text('Số điện thoại hợp lệ')
+                                    .removeClass('text-danger')
+                                    .addClass('text-success');
+                            }
+                        }).fail(function () {
+                            $('#phoneValidationMessage')
+                                .text('Lỗi kiểm tra số điện thoại')
+                                .removeClass('text-success')
+                                .addClass('text-danger');
+                        });
+                    }, 500);
+                } else {
+                    $('#phoneValidationMessage').text('').removeClass('text-danger text-success');
+                }
+            });
+
+            customerNameInput.on('input', function () {
+                if ($('input[name="customerMode"]:checked').val() === 'new') {
+                    selectedCustomer = null;
+                    $('#customerId').val('');
+                }
+            });
+
+            customerEmailInput.on('input', function () {
+                const email = $(this).val().trim();
+
+                if (emailCheckTimeout) {
+                    clearTimeout(emailCheckTimeout);
+                }
+
+                if (email) {
+                    emailCheckTimeout = setTimeout(function () {
+                        $.post(endpoints.checkEmail, {
+                            email: email,
+                            __RequestVerificationToken: getVerificationToken()
+                        }).done(function (response) {
+                            if (response.exists) {
+                                $('#emailValidationMessage')
+                                    .text('Email này đã tồn tại. Vui lòng sử dụng email khác.')
+                                    .removeClass('text-success')
+                                    .addClass('text-danger');
+                            } else {
+                                $('#emailValidationMessage')
+                                    .text('Email hợp lệ')
+                                    .removeClass('text-danger')
+                                    .addClass('text-success');
+                            }
+                        }).fail(function () {
+                            $('#emailValidationMessage')
+                                .text('Lỗi kiểm tra email')
+                                .removeClass('text-success')
+                                .addClass('text-danger');
+                        });
+                    }, 500);
+                } else {
+                    $('#emailValidationMessage').text('').removeClass('text-danger text-success');
+                }
+            });
+
+            $('#customerSearch').on('input', function () {
+                const searchTerm = $(this).val();
+                if (searchTerm.length >= 2) {
+                    searchCustomers(searchTerm);
+                } else {
+                    $('#customerSearchResults').hide();
+                }
+            });
+
+            $('#searchCustomerBtn').click(function () {
+                const searchTerm = $('#customerSearch').val();
+                if (searchTerm.length >= 2) {
+                    searchCustomers(searchTerm);
+                }
+            });
+
+            function searchCustomers(searchTerm) {
+                $.post(endpoints.searchCustomers, {
+                    searchTerm: searchTerm,
+                    __RequestVerificationToken: getVerificationToken()
+                }).done(function (response) {
+                    if (response.success && response.customers) {
+                        displayCustomerResults(response.customers);
+                    } else {
+                        showMessage('Có lỗi khi tìm kiếm khách hàng: ' + (response.error || 'Unknown error'), 'danger');
+                    }
+                }).fail(function () {
+                    showMessage('Có lỗi xảy ra khi tìm kiếm khách hàng', 'danger');
+                });
+            }
+
+            function displayCustomerResults(customers) {
+                let html = '';
+                if (customers.length === 0) {
+                    html = '<div class="list-group-item text-center text-muted">Không tìm thấy khách hàng nào</div>';
+                } else {
+                    customers.forEach(function (customer) {
+                        html += `
+                            <div class="list-group-item list-group-item-action customer-item"
+                                 data-customer-id="${customer.id}"
+                                 data-customer-name="${customer.name}"
+                                 data-customer-phone="${customer.phone}"
+                                 data-customer-email="${customer.email}"
+                                 data-customer-address="${customer.address || ''}">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">${customer.name}</h6>
+                                    <small class="text-primary">${customer.phone}</small>
+                                </div>
+                                <p class="mb-1"><i class="fas fa-envelope"></i> ${customer.email}</p>
+                                ${customer.address ? `<small class="text-muted"><i class="fas fa-map-marker-alt"></i> ${customer.address}</small>` : ''}
+                            </div>
+                        `;
+                    });
+                }
+
+                $('#customerList').html(html);
+                $('#customerSearchResults').show();
+
+                $('.customer-item').click(function () {
+                    selectCustomer({
+                        id: $(this).data('customer-id'),
+                        name: $(this).data('customer-name'),
+                        phone: $(this).data('customer-phone'),
+                        email: $(this).data('customer-email')
+                    });
+                });
+            }
+
+            function selectCustomer(customer) {
+                selectedCustomer = customer;
+                $('#customerId').val(customer.id);
+                customerNameInput.val(customer.name);
+                customerPhoneInput.val(customer.phone);
+                customerEmailInput.val(customer.email);
+
+                $('#selectedCustomerName').text(customer.name);
+                $('#selectedCustomerDetails').html(`
+                    <i class="fas fa-phone"></i> ${customer.phone}<br>
+                    <i class="fas fa-envelope"></i> ${customer.email}
+                `);
+
+                $('#selectedCustomerInfo').show();
+                $('#noCustomerSelected').hide();
+                $('#customerSearchResults').hide();
+                $('#customerSearch').val('');
+
+                showMessage(`Đã chọn khách hàng: ${customer.name}`, 'success');
+            }
+
+            function clearSelectedCustomer() {
+                selectedCustomer = null;
+                $('#customerId').val('');
+                customerNameInput.val('');
+                customerPhoneInput.val('');
+                customerEmailInput.val('');
+                $('#selectedCustomerInfo').hide();
+                $('#noCustomerSelected').show();
+                $('#customerSearchResults').hide();
+            }
+
+            function clearNewCustomerForm() {
+                customerNameInput.val('');
+                customerPhoneInput.val('');
+                customerEmailInput.val('');
+                $('#phoneValidationMessage').text('').removeClass('text-danger text-success');
+                $('#emailValidationMessage').text('').removeClass('text-danger text-success');
+            }
+
+            $('#startTime').change(function () {
+                const startTime = $(this).val();
+                if (startTime) {
+                    const start = new Date('2000-01-01T' + startTime);
+                    start.setMinutes(start.getMinutes() + 60);
+                    const endTime = start.toTimeString().substring(0, 5);
+                    $('#endTime').val(endTime);
+                }
+            });
+
+            $('#checkAvailabilityBtn').click(function () {
+                const vehicleId = $('#vehicleSelect').val();
+                const date = $('#scheduledDate').val();
+                const startTime = $('#startTime').val();
+                const endTime = $('#endTime').val();
+
+                if (!vehicleId || !date || !startTime || !endTime) {
+                    showAvailabilityMessage('Vui lòng chọn đầy đủ xe, ngày và khung giờ trước khi kiểm tra.', 'warning');
+                    return;
+                }
+
+                if (startTime >= endTime) {
+                    showAvailabilityMessage('Giờ kết thúc phải sau giờ bắt đầu.', 'danger');
+                    return;
+                }
+
+                const start = new Date('2000-01-01T' + startTime);
+                const end = new Date('2000-01-01T' + endTime);
+                const diffMinutes = (end - start) / (1000 * 60);
+
+                if (diffMinutes < 30) {
+                    showAvailabilityMessage('Thời gian thử xe tối thiểu là 30 phút.', 'danger');
+                    return;
+                }
+
+                showAvailabilityMessage('Hệ thống hiện cho phép đặt lịch mà không cần kiểm tra lịch bận. Vui lòng đảm bảo thủ công về thời gian.', 'info');
+            });
+
+            function showAvailabilityMessage(message, type) {
+                const alertClass = type === 'danger' ? 'alert-danger'
+                    : type === 'warning' ? 'alert-warning'
+                    : 'alert-info';
+
+                $('#availabilityResult')
+                    .removeClass('alert-info alert-success alert-danger alert-warning')
+                    .addClass(alertClass)
+                    .html('<i class="fas fa-info-circle"></i> ' + message)
+                    .show();
+            }
+
+            function showMessage(message, type) {
+                const alertClass = 'alert-' + type;
+                const alertHtml = `<div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+
+                $('.card-body').prepend(alertHtml);
+
+                setTimeout(function () {
+                    $('.alert-dismissible').fadeOut();
+                }, 3000);
+            }
+
+            $('#testDriveForm').submit(function (e) {
+                const customerMode = $('input[name="customerMode"]:checked').val();
+
+                if (customerMode === 'existing' && !selectedCustomer) {
+                    e.preventDefault();
+                    showMessage('Vui lòng chọn khách hàng!', 'danger');
+                    return false;
+                }
+
+                if (customerMode === 'new') {
+                    const name = customerNameInput.val().trim();
+                    const phone = customerPhoneInput.val().trim();
+                    const email = customerEmailInput.val().trim();
+
+                    if (!name || !phone || !email) {
+                        e.preventDefault();
+                        showMessage('Vui lòng điền đầy đủ thông tin khách hàng!', 'danger');
+                        return false;
+                    }
+
+                    if ($('#phoneValidationMessage').hasClass('text-danger')) {
+                        e.preventDefault();
+                        showMessage('Số điện thoại đã tồn tại. Vui lòng kiểm tra lại!', 'danger');
+                        return false;
+                    }
+
+                    $('#customerId').val('');
+                } else if (customerMode === 'existing' && selectedCustomer) {
+                    customerNameInput.val(selectedCustomer.name);
+                    customerPhoneInput.val(selectedCustomer.phone);
+                    customerEmailInput.val(selectedCustomer.email);
+                    $('#customerId').val(selectedCustomer.id);
+                }
+
+                const startTime = $('#startTime').val();
+                const endTime = $('#endTime').val();
+
+                if (startTime >= endTime) {
+                    e.preventDefault();
+                    showMessage('Giờ kết thúc phải sau giờ bắt đầu!', 'danger');
+                    return false;
+                }
+
+                const scheduledDate = new Date($('#scheduledDate').val());
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (scheduledDate <= today) {
+                    e.preventDefault();
+                    showMessage('Ngày thử xe phải từ ngày mai trở đi!', 'danger');
+                    return false;
+                }
+
+                const start = new Date('2000-01-01T' + startTime);
+                const end = new Date('2000-01-01T' + endTime);
+                const diffMinutes = (end - start) / (1000 * 60);
+
+                if (diffMinutes < 30) {
+                    e.preventDefault();
+                    showMessage('Thời gian thử xe tối thiểu là 30 phút!', 'danger');
+                    return false;
+                }
+
+                $('#submitBtn').prop('disabled', false);
+            });
+        });
+    </script>
+
+    <style>
+        .customer-item:hover {
+            cursor: pointer;
+            background-color: #f8f9fa;
+        }
+
+        .btn-check:checked + .btn {
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+            color: white;
+        }
+
+        .alert {
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            border-left-color: #28a745;
+        }
+
+        .alert-danger {
+            border-left-color: #dc3545;
+        }
+
+        .alert-info {
+            border-left-color: #17a2b8;
+        }
+
+        .alert-warning {
+            border-left-color: #ffc107;
+        }
+    </style>
+}
+
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-plus"></i> Thông tin đặt lịch thử xe
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="testDriveForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <input type="hidden" asp-for="Form.CustomerId" id="customerId" />
+
+                        <div class="section-header mb-3">
+                            <h6 class="text-primary">
+                                <i class="fas fa-user"></i> Thông tin khách hàng
+                            </h6>
+                            <hr>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="btn-group" role="group" aria-label="Customer selection mode">
+                                    <input type="radio" class="btn-check" name="customerMode" id="existingCustomer" value="existing" checked>
+                                    <label class="btn btn-outline-primary" for="existingCustomer">
+                                        <i class="fas fa-search"></i> Chọn khách hàng có sẵn
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="customerMode" id="newCustomer" value="new">
+                                    <label class="btn btn-outline-success" for="newCustomer">
+                                        <i class="fas fa-user-plus"></i> Tạo khách hàng mới
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="existingCustomerSection">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">
+                                            <i class="fas fa-search"></i> Tìm kiếm khách hàng <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="text" id="customerSearch" class="form-control"
+                                                   placeholder="Nhập tên hoặc số điện thoại khách hàng..." />
+                                            <button type="button" class="btn btn-primary" id="searchCustomerBtn">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                        <div class="form-text">Nhập ít nhất 2 ký tự để tìm kiếm</div>
+                                        <span asp-validation-for="Form.CustomerId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group mb-3">
+                                        <label class="form-label">Khách hàng đã chọn</label>
+                                        <div id="selectedCustomerInfo" class="alert alert-info" style="display: none;">
+                                            <strong id="selectedCustomerName"></strong><br>
+                                            <small id="selectedCustomerDetails"></small>
+                                        </div>
+                                        <div id="noCustomerSelected" class="alert alert-warning">
+                                            Chưa chọn khách hàng nào
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="customerSearchResults" class="mb-3" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Kết quả tìm kiếm</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="customerList" class="list-group"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="newCustomerSection" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="Form_CustomerName" class="form-label">
+                                            <i class="fas fa-user"></i> Tên khách hàng <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="Form.CustomerName" class="form-control" placeholder="Nhập tên khách hàng" id="Form_CustomerName" />
+                                        <span asp-validation-for="Form.CustomerName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group mb-3">
+                                        <label for="Form_CustomerPhone" class="form-label">
+                                            <i class="fas fa-phone"></i> Số điện thoại <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="Form.CustomerPhone" class="form-control" placeholder="Nhập số điện thoại" id="Form_CustomerPhone" />
+                                        <span asp-validation-for="Form.CustomerPhone" class="text-danger"></span>
+                                        <div id="phoneValidationMessage" class="form-text"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group mb-3">
+                                        <label for="Form_CustomerEmail" class="form-label">
+                                            <i class="fas fa-envelope"></i> Email <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="Form.CustomerEmail" class="form-control" placeholder="Nhập email khách hàng" id="Form_CustomerEmail" />
+                                        <span asp-validation-for="Form.CustomerEmail" class="text-danger"></span>
+                                        <div id="emailValidationMessage" class="form-text"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-header mb-3 mt-4">
+                            <h6 class="text-primary">
+                                <i class="fas fa-car"></i> Thông tin xe
+                            </h6>
+                            <hr>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Form.VehicleId" class="form-label">
+                                        <i class="fas fa-car"></i> Chọn xe <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="Form.VehicleId" class="form-select" id="vehicleSelect" asp-items="Model.VehicleOptions">
+                                        <option value="">-- Chọn xe để thử --</option>
+                                    </select>
+                                    <span asp-validation-for="Form.VehicleId" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-header mb-3 mt-4">
+                            <h6 class="text-primary">
+                                <i class="fas fa-calendar"></i> Thời gian thử xe
+                            </h6>
+                            <hr>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Form.ScheduledDate" class="form-label">
+                                        <i class="fas fa-calendar"></i> Ngày thử xe <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Form.ScheduledDate" class="form-control" type="date" id="scheduledDate" />
+                                    <span asp-validation-for="Form.ScheduledDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Form.StartTime" class="form-label">
+                                        <i class="fas fa-clock"></i> Giờ bắt đầu <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Form.StartTime" class="form-control" type="time" id="startTime" />
+                                    <span asp-validation-for="Form.StartTime" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Form.EndTime" class="form-label">
+                                        <i class="fas fa-clock"></i> Giờ kết thúc <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Form.EndTime" class="form-control" type="time" id="endTime" />
+                                    <span asp-validation-for="Form.EndTime" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="availabilityResult" class="alert" style="display: none;"></div>
+
+                        <div id="staffScheduleInfo"></div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Form.Notes" class="form-label">
+                                        <i class="fas fa-sticky-note"></i> Ghi chú
+                                    </label>
+                                    <textarea asp-for="Form.Notes" class="form-control" rows="3"
+                                              placeholder="Ghi chú thêm về yêu cầu thử xe (tùy chọn)"></textarea>
+                                    <span asp-validation-for="Form.Notes" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Lưu ý:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Tất cả các trường có dấu <span class="text-danger">*</span> là bắt buộc</li>
+                                <li>Ngày thử xe phải từ ngày mai trở đi</li>
+                                <li>Thời gian thử xe tối thiểu là 30 phút</li>
+                                <li>Hệ thống sẽ kiểm tra tính khả dụng của xe trong khung giờ bạn chọn</li>
+                                <li>Khách hàng sẽ nhận thông báo xác nhận qua email</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-page="./Index" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> Hủy bỏ
+                            </a>
+                            <button type="button" id="checkAvailabilityBtn" class="btn btn-info me-md-2">
+                                <i class="fas fa-search"></i> Kiểm tra khả dụng
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save"></i> Đặt lịch thử xe
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

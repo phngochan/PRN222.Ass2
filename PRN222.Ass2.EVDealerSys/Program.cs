@@ -50,6 +50,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ITestDriveService, TestDriveService>();
 
 // ========== Add Authen ==========
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

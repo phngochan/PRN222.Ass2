@@ -228,11 +228,14 @@ public class TestDriveService(ITestDriveRepository testDriveRepo, ICustomerServi
     {
         return status switch
         {
-            1 => "Chờ xác nhận",
-            2 => "Đã xác nhận",
-            3 => "Hoàn thành",
-            4 => "Đã hủy",
-            _ => "Không xác định"
+            1 => "Cho xac nhan",
+            2 => "Da xac nhan",
+            3 => "Hoan thanh",
+            4 => "Da huy",
+            5 => "Khach hang huy",
+            6 => "Khong den",
+            _ => "Khong xac dinh"
         };
     }
 }
+
