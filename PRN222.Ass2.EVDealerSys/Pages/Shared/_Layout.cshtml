@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -61,6 +61,40 @@
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item ev-dropdown-item" asp-area="" asp-controller="DealersManagement" asp-action="Index"><i class="fas fa-building"></i> Đại lý</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li class="dropdown-header">Phân Bổ Xe</li>
+                                    @if (User.IsInRole("2"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/Request">
+                                                <i class="fas fa-plus-circle"></i> Yêu Cầu Phân Bổ
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/MyRequests">
+                                                <i class="fas fa-clipboard-list"></i> Yêu Cầu Của Tôi
+                                            </a>
+                                        </li>
+                                    }
+                                    @if (User.IsInRole("1") || User.IsInRole("3"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/PendingApprovals">
+                                                <i class="fas fa-tasks"></i> Phê Duyệt YC
+                                                @{
+                                                    // Có thể thêm badge hiển thị số lượng pending
+                                                }
+                                            </a>
+                                        </li>
+                                    }
+                                    @if (User.IsInRole("1"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/ManageAllocations">
+                                                <i class="fas fa-boxes"></i> Quản Lý Phân Bổ
+                                            </a>
+                                        </li>
+                                    }
                                 </ul>
                             </li>
 

@@ -52,6 +52,10 @@ builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ITestDriveService, TestDriveService>();
 
+// Allocation
+builder.Services.AddScoped<IVehicleAllocationRepository, VehicleAllocationRepository>();
+builder.Services.AddScoped<IAllocationService, AllocationService>();
+
 // ========== Add Authen ==========
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
