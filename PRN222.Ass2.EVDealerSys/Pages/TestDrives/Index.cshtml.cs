@@ -55,9 +55,24 @@ public class IndexModel : PageModel
         try
         {
             var updated = await _testDriveService.UpdateStatusAsync(id, status);
-            TempData[updated ? "SuccessMessage" : "ErrorMessage"] = updated
-                ? "Cập nhật trạng thái thành công."
-                : "Không thể cập nhật trạng thái.";
+            
+            if (updated)
+            {
+                TempData["SuccessMessage"] = status switch
+                {
+                    1 => "Cập nhật trạng thái thành chờ xác nhận.",
+                    2 => "Xác nhận lịch thử xe thành công.",
+                    3 => "Đánh dấu lịch thử xe đã hoàn thành.",
+                    4 => "Hủy lịch thử xe thành công.",
+                    5 => "Đánh dấu khách hàng hủy lịch.",
+                    6 => "Ghi nhận khách hàng không đến.",
+                    _ => "Cập nhật trạng thái thành công."
+                };
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Không thể cập nhật trạng thái. Kiểm tra xem trạng thái chuyển đổi có hợp lệ không.";
+            }
         }
         catch (Exception ex)
         {
