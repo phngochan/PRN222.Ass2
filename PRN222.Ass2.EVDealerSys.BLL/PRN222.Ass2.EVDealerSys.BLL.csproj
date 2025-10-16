@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PRN222.Ass2.EVDealerSys.BusinessObjects\PRN222.Ass2.EVDealerSys.BusinessObjects.csproj" />
     <ProjectReference Include="..\PRN222.Ass2.EVDealerSys.DAL\PRN222.Ass2.EVDealerSys.DAL.csproj" />
   </ItemGroup>
 

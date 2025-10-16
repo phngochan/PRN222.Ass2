@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PRN222.Ass2.EVDealerSys.BLL\PRN222.Ass2.EVDealerSys.BLL.csproj" />
+    <ProjectReference Include="..\PRN222.Ass2.EVDealerSys.BusinessObjects\PRN222.Ass2.EVDealerSys.BusinessObjects.csproj" />
   </ItemGroup>
 
 </Project>
