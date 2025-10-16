@@ -1,0 +1,406 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.Dashboard.StaffModel
+@{
+    ViewData["Title"] = "Staff Dashboard";
+}
+
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-banner bg-info text-white rounded p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-user"></i> Chào mừng, @Model.ViewModel.UserName!</h2>
+                        <p class="mb-0">Staff Dashboard - Xử lý công việc hàng ngày</p>
+                        <small>Đăng nhập lúc: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-tasks fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Hôm nay
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ViewModel.MyOrdersToday</div>
+                            <div class="small text-muted">
+                                <i class="fas fa-calendar-day"></i> Đơn hàng đã xử lý
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Tuần này
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ViewModel.MyOrdersThisWeek</div>
+                            <div class="small text-success">
+                                <i class="fas fa-arrow-up"></i> Tăng so với tuần trước
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-week fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Tháng này
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ViewModel.MyOrdersThisMonth</div>
+                            <div class="small text-info">
+                                <i class="fas fa-calendar-alt"></i> Tổng đơn hàng
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Công việc chờ
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ViewModel.PendingTasks.Count</div>
+                            <div class="small text-danger">
+                                <i class="fas fa-exclamation-triangle"></i> Cần xử lý
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tasks fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Pending Tasks -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-tasks"></i> Công việc cần xử lý
+                    </h6>
+                    <span class="badge bg-danger">@Model.ViewModel.PendingTasks.Count</span>
+                </div>
+                <div class="card-body">
+                    @if (Model.ViewModel.PendingTasks.Any())
+                    {
+                        @foreach (var task in Model.ViewModel.PendingTasks)
+                        {
+                            <div class="card mb-3 task-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="card-title">@task.Title</h6>
+                                            <p class="card-text small text-muted">
+                                                <i class="fas fa-calendar"></i> Hạn: @task.DueDate.ToString("dd/MM/yyyy HH:mm")
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-@(GetPriorityBadgeClass(task.Priority))">
+                                                @task.Priority
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button class="btn btn-sm btn-success me-2">
+                                            <i class="fas fa-check"></i> Hoàn thành
+                                        </button>
+                                        <button class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> Chi tiết
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                            <h5 class="text-success">Tuyệt vời!</h5>
+                            <p class="text-muted">Bạn đã hoàn thành tất cả công việc</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-history"></i> Hoạt động gần đây
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.ViewModel.RecentActivities.Any())
+                    {
+                        <div class="timeline">
+                            @foreach (var activity in Model.ViewModel.RecentActivities)
+                            {
+                                <div class="timeline-item">
+                                    <div class="timeline-marker bg-info"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="timeline-title">@activity.Action</h6>
+                                        <p class="timeline-text">@activity.Description</p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock"></i> @activity.Time.ToString("HH:mm dd/MM/yyyy")
+                                        </small>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Chưa có hoạt động nào</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions & Info -->
+        <div class="col-xl-4 col-lg-5">
+            <!-- Quick Actions -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-rocket"></i> Thao tác nhanh
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="#" class="btn btn-success btn-block">
+                            <i class="fas fa-plus"></i> Tạo đơn hàng
+                        </a>
+                        <a href="#" class="btn btn-info btn-block">
+                            <i class="fas fa-user-plus"></i> Thêm khách hàng
+                        </a>
+                        <a href="#" class="btn btn-warning btn-block">
+                            <i class="fas fa-search"></i> Tìm kiếm xe
+                        </a>
+                        <a href="#" class="btn btn-primary btn-block">
+                            <i class="fas fa-phone"></i> Liên hệ khách hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today's Summary -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-calendar-day"></i> Tóm tắt hôm nay
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Đơn hàng đã xử lý:</span>
+                        <span class="badge bg-success">@Model.ViewModel.MyOrdersToday</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Khách hàng đã liên hệ:</span>
+                        <span class="badge bg-info">3</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Công việc hoàn thành:</span>
+                        <span class="badge bg-warning">5</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Công việc còn lại:</span>
+                        <span class="badge bg-danger">@Model.ViewModel.PendingTasks.Count</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-line"></i> Hiệu suất cá nhân
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="small">Mục tiêu tháng</span>
+                            <span class="small">75%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: 75%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="small">Khách hàng hài lòng</span>
+                            <span class="small">90%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-info" style="width: 90%"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <div class="d-flex justify-content-between">
+                            <span class="small">Hiệu suất tổng thể</span>
+                            <span class="small">82%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar bg-warning" style="width: 82%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    public string GetPriorityBadgeClass(string priority)
+    {
+        return priority switch
+        {
+            "High" => "danger",
+            "Medium" => "warning",
+            "Low" => "info",
+            _ => "secondary"
+        };
+    }
+}
+
+<style>
+    .welcome-banner {
+        background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+    }
+
+    .border-left-primary {
+        border-left: 0.25rem solid #4e73df !important;
+    }
+
+    .border-left-success {
+        border-left: 0.25rem solid #1cc88a !important;
+    }
+
+    .border-left-info {
+        border-left: 0.25rem solid #36b9cc !important;
+    }
+
+    .border-left-warning {
+        border-left: 0.25rem solid #f6c23e !important;
+    }
+
+    .border-left-danger {
+        border-left: 0.25rem solid #e74a3b !important;
+    }
+
+    .card {
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
+    }
+
+    .text-gray-300 {
+        color: #dddfeb !important;
+    }
+
+    .text-gray-800 {
+        color: #5a5c69 !important;
+    }
+
+    .task-card {
+        border-left: 4px solid #36b9cc;
+        transition: all 0.3s ease;
+    }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+    .timeline {
+        position: relative;
+        padding-left: 20px;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+        padding-left: 30px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: -10px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -4px;
+        top: 17px;
+        bottom: -20px;
+        width: 2px;
+        background-color: #e3e6f0;
+    }
+
+    .timeline-item:last-child::before {
+        display: none;
+    }
+
+    .timeline-title {
+        margin-bottom: 5px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .timeline-text {
+        margin-bottom: 5px;
+        font-size: 13px;
+        color: #6c757d;
+    }
+</style>
