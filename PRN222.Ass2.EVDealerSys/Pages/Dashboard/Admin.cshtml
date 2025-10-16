@@ -1,5 +1,5 @@
-﻿@page
-@Model PRN222.Ass2.EVDealerSys.Pages.Dashboard.AdminModel
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.Dashboard.AdminModel
 @{
     ViewData["Title"] = "Admin Dashboard";
 }
@@ -120,7 +120,7 @@
                     </a>
                 </div>
                 <div class="card-body">
-                    @if (Model.RecentUsers.Any())
+                    @if (Model.ViewModel.RecentUsers.Any())
                     {
                         <div class="table-responsive">
                             <table class="table table-bordered">
@@ -135,7 +135,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var user in Model.RecentUsers)
+                                    @foreach (var user in Model.ViewModel.RecentUsers)
                                     {
                                         <tr>
                                             <td>@user.Id</td>
