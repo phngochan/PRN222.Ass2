@@ -1,13 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Selecting;
 
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
-using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.UsersManagement;
 
+[Authorize(Roles = "1,2")]
 public class EditModel : PageModel
 {
     private readonly IUserService _userService;
@@ -54,7 +55,11 @@ public class EditModel : PageModel
             DealerOptions = await GetDealerSelectList();
             return Page();
         }
-        
+        if (ViewModel.Role != 3)
+        {
+            return Forbid();
+        }
+
         // Get existing user first
         var existingUser = await _userService.GetUserByIdAsync(ViewModel.Id);
         if (existingUser == null)

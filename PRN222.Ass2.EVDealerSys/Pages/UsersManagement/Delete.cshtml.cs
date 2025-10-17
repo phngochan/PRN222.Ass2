@@ -1,4 +1,4 @@
-
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -7,6 +7,7 @@ using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.UsersManagement;
 
+[Authorize(Roles = "1")]
 public class DeleteModel : PageModel
 {
     private readonly IUserService _userService;

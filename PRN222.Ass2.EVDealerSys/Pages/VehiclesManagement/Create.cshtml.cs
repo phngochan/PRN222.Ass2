@@ -1,5 +1,6 @@
 using EVDealerSys.Models;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
@@ -11,6 +12,7 @@ using PRN222.Ass2.EVDealerSys.Hubs;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
 {
+    [Authorize(Roles = "1,2")]
     public class CreateModel : BaseCrudPageModel
     {
         private readonly IVehicleService _vehicleService;

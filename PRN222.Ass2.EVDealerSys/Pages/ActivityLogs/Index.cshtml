@@ -1,0 +1,210 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.ActivityLogs.IndexModel
+@{
+    ViewData["Title"] = "Activity Logs";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-history"></i> Activity Logs</h2>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Search and Filter -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tìm kiếm</label>
+                                <input type="text" class="form-control" asp-for="SearchTerm"
+                                       placeholder="Tìm theo action, description, user name...">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Lọc theo User ID</label>
+                                <input type="number" class="form-control" asp-for="FilterUserId"
+                                       placeholder="Nhập User ID">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-outline-primary">
+                                        <i class="fas fa-search"></i> Tìm kiếm
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <h4 class="text-primary">@Model.TotalCount</h4>
+                                    <p class="text-muted mb-0">Tổng số log</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h4 class="text-success">@Model.Logs.Count</h4>
+                                    <p class="text-muted mb-0">Log trên trang này</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <h4 class="text-info">@Model.TotalPages</h4>
+                                    <p class="text-muted mb-0">Tổng số trang</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Table -->
+            <div class="card">
+                <div class="card-body">
+                    @if (Model.Logs.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th width="5%">ID</th>
+                                        <th width="10%">User</th>
+                                        <th width="15%">Action</th>
+                                        <th width="40%">Description</th>
+                                        <th width="15%">Created At</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var log in Model.Logs)
+                                    {
+                                        <tr>
+                                            <td>@log.Id</td>
+                                            <td>
+                                                @if (log.UserId.HasValue)
+                                                {
+                                                    <span class="badge bg-info">
+                                                        @log.UserName (#@log.UserId)
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">System</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong class="text-primary">@log.Action</strong>
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrWhiteSpace(log.Description))
+                                                {
+                                                    <small class="text-muted">@log.Description</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small>@log.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</small>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        @if (Model.TotalPages > 1)
+                        {
+                            <nav aria-label="Page navigation" class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item @(Model.PageNumber == 1 ? "disabled" : "")">
+                                        <a class="page-link" asp-page="Index"
+                                           asp-route-searchTerm="@Model.SearchTerm"
+                                           asp-route-filterUserId="@Model.FilterUserId"
+                                           asp-route-pageNumber="@(Model.PageNumber - 1)">
+                                            <i class="fas fa-chevron-left"></i> Trước
+                                        </a>
+                                    </li>
+
+                                    @for (int i = 1; i <= Model.TotalPages; i++)
+                                    {
+                                        <li class="page-item @(Model.PageNumber == i ? "active" : "")">
+                                            <a class="page-link" asp-page="Index"
+                                               asp-route-searchTerm="@Model.SearchTerm"
+                                               asp-route-filterUserId="@Model.FilterUserId"
+                                               asp-route-pageNumber="@i">
+                                                @i
+                                            </a>
+                                        </li>
+                                    }
+
+                                    <li class="page-item @(Model.PageNumber == Model.TotalPages ? "disabled" : "")">
+                                        <a class="page-link" asp-page="Index"
+                                           asp-route-searchTerm="@Model.SearchTerm"
+                                           asp-route-filterUserId="@Model.FilterUserId"
+                                           asp-route-pageNumber="@(Model.PageNumber + 1)">
+                                            Sau <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Không tìm thấy log nào</h5>
+                            <p class="text-muted">
+                                @if (!string.IsNullOrWhiteSpace(Model.SearchTerm))
+                                {
+                                    <span>Không có kết quả cho từ khóa "@Model.SearchTerm"</span>
+                                }
+                                else
+                                {
+                                    <span>Chưa có log nào trong hệ thống</span>
+                                }
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function () {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+
+        // Auto-refresh every 30 seconds (optional)
+        // setTimeout(function () {
+        //     location.reload();
+        // }, 30000);
+    </script>
+}

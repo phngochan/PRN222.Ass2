@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
@@ -9,6 +10,7 @@ using PRN222.Ass2.EVDealerSys.Hubs;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.CustomerManagement
 {
+    [Authorize(Roles = "1,2")]
     public class EditModel : BaseCrudPageModel
     {
         private readonly ICustomerService _customerService;

@@ -1,5 +1,6 @@
 using EVDealerSys.Models;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -8,6 +9,7 @@ using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
 {
+    [Authorize(Roles = "1,2")]
     public class IndexModel : BaseCrudPageModel
     {
         private readonly IVehicleService _vehicleService;

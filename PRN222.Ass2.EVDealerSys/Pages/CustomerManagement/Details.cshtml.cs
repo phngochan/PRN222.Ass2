@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
@@ -6,6 +7,7 @@ using PRN222.Ass2.EVDealerSys.Models.CustomerManagement;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.CustomerManagement
 {
+    [Authorize(Roles = "1,2")]
     public class DetailsModel : BaseCrudPageModel
     {
         private readonly ICustomerService _customerService;

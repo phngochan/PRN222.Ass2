@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -8,6 +9,7 @@ using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.UsersManagement;
 
+[Authorize(Roles = "1")]
 public class CreateModel : PageModel
 {
     private readonly IUserService _userService;

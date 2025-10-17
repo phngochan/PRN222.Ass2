@@ -1,5 +1,6 @@
 using EVDealerSys.Models;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
@@ -7,6 +8,7 @@ using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
 {
+    [Authorize(Roles = "1,2")]
     public class DetailsModel : BaseCrudPageModel
     {
         private readonly IVehicleService _vehicleService;

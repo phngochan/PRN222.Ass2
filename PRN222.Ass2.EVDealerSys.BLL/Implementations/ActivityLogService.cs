@@ -20,4 +20,26 @@ public class ActivityLogService(IActivityLogRepository activityLogRepository) : 
         _activityLogRepository.Create(log);
         await _activityLogRepository.SaveAsync();
     }
+
+    public async Task<IEnumerable<ActivityLog>> GetAllLogsAsync()
+    {
+        var logs = await _activityLogRepository.GetAllAsync();
+        return logs.OrderByDescending(l => l.CreatedAt);
+    }
+
+    public async Task<IEnumerable<ActivityLog>> GetLogsByUserIdAsync(int userId)
+    {
+        var logs = await _activityLogRepository.GetAllAsync();
+        return logs.Where(l => l.UserId == userId).OrderByDescending(l => l.CreatedAt);
+    }
+
+    public async Task<IEnumerable<ActivityLog>> SearchLogsAsync(string searchTerm)
+    {
+        var logs = await _activityLogRepository.GetAllAsync();
+        return logs.Where(l =>
+            (l.Action != null && l.Action.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+            (l.Description != null && l.Description.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) ||
+            (l.User != null && l.User.Name != null && l.User.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+        ).OrderByDescending(l => l.CreatedAt);
+    }
 }
