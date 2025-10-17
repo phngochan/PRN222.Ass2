@@ -15,20 +15,31 @@ public static class DbInitializer
         var email = config["AdminAccount:Email"];
         var password = config["AdminAccount:Password"];
 
+        // Hash password first
+        var hashedPassword = HashPassword(password);
+
         // Kiểm tra xem admin đã tồn tại chưa
         var existingAdmin = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
-        
+
         if (existingAdmin != null)
         {
-            // Xóa admin cũ để tạo lại với password đã hash
-            context.Users.Remove(existingAdmin);
+            // Nếu admin tồn tại, cập nhật password (không xóa) để giữ nguyên Id và liên kết ActivityLog
+            var needUpdate = existingAdmin.Password != hashedPassword || existingAdmin.Role != 1 || string.IsNullOrEmpty(existingAdmin.Name);
+            if (needUpdate)
+            {
+                existingAdmin.Password = hashedPassword;
+                existingAdmin.Role = 1;
+                existingAdmin.Name = string.IsNullOrEmpty(existingAdmin.Name) ? "Default admin" : existingAdmin.Name;
+                context.Users.Update(existingAdmin);
+                await context.SaveChangesAsync();
+            }
+        }
+        else
+        {
+            // Tạo admin mới với password đã hash
+            context.Users.Add(new User { Email = email, Password = hashedPassword, Role = 1, Name = "Default admin" });
             await context.SaveChangesAsync();
         }
-
-        // Tạo admin mới với password đã hash
-        var hashedPassword = HashPassword(password);
-        context.Users.Add(new User { Email = email, Password = hashedPassword, Role = 1, Name = "Default admin" });
-        await context.SaveChangesAsync();
     }
 
     private static string HashPassword(string password)

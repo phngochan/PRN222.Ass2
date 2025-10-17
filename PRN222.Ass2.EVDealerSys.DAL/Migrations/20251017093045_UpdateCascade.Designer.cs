@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PRN222.Ass2.EVDealerSys.DAL.Context;
 
@@ -11,9 +12,11 @@ using PRN222.Ass2.EVDealerSys.DAL.Context;
 namespace PRN222.Ass2.EVDealerSys.DAL.Migrations
 {
     [DbContext(typeof(EvdealerDbContext))]
-    partial class EvdealerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251017093045_UpdateCascade")]
+    partial class UpdateCascade
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

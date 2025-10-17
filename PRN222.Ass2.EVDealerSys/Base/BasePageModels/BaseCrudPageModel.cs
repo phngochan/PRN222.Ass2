@@ -20,8 +20,16 @@ public abstract class BaseCrudPageModel : BasePageModel
         }
     }
 
+    protected string? CurrentUserName
+    {
+        get
+        {
+            return User?.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+        }
+    }
+
     protected async Task LogAsync(string action, string? description = null)
     {
-        await _logService.LogAsync(CurrentUserId, action, description);
+        await _logService.LogAsync(CurrentUserId, CurrentUserName, action, description);
     }
 }

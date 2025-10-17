@@ -117,7 +117,7 @@ public partial class EvdealerDbContext : DbContext
             entity.HasOne(l => l.User)
                   .WithMany()
                   .HasForeignKey(l => l.UserId)
-                  .OnDelete(DeleteBehavior.SetNull);
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         base.OnModelCreating(modelBuilder);

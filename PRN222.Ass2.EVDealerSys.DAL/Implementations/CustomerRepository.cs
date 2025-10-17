@@ -13,20 +13,8 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
         {
         }
 
-        public override async Task<IEnumerable<Customer>> GetAllAsync()
-        {
-            return await _context.Customers
-                .Include(c => c.Orders)
-                    .ThenInclude(o => o.User)
-                        .ThenInclude(u => u.Dealer)
-                .Include(c => c.Orders)
-                    .ThenInclude(o => o.OrderItems)
-                        .ThenInclude(oi => oi.Vehicle)
-                .OrderBy(c => c.Name)
-                .ToListAsync();
-        }
 
-        public async Task<Customer?> GetByIdAsync(int id)
+        public async override Task<Customer?> GetByIdAsync(int id)
         {
             return await _context.Customers
                 .Include(c => c.Dealer)

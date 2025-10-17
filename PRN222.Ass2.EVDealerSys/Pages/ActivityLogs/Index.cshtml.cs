@@ -1,11 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
+using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.ActivityLogs
 {
+    [Authorize(Roles = "1,2")]
     public class IndexModel : PageModel
     {
         private readonly IActivityLogService _activityLogService;
@@ -34,11 +37,6 @@ namespace PRN222.Ass2.EVDealerSys.Pages.ActivityLogs
 
         public async Task<IActionResult> OnGetAsync()
         {
-            // Only Admin and Manager can view logs
-            var userRole = Request.Cookies["UserRole"];
-            if (userRole != "1" && userRole != "2")
-                return RedirectToPage("/Dashboard/Index");
-
             try
             {
                 IEnumerable<ActivityLog> logs;
@@ -66,6 +64,7 @@ namespace PRN222.Ass2.EVDealerSys.Pages.ActivityLogs
                     {
                         Id = l.Id,
                         UserId = l.UserId,
+                        // Prefer navigation's Name if available, otherwise use stored UserName, fallback to N/A
                         UserName = l.User?.Name ?? "N/A",
                         Action = l.Action ?? "",
                         Description = l.Description,
@@ -81,15 +80,5 @@ namespace PRN222.Ass2.EVDealerSys.Pages.ActivityLogs
                 return Page();
             }
         }
-    }
-
-    public class ActivityLogViewModel
-    {
-        public int Id { get; set; }
-        public int? UserId { get; set; }
-        public string UserName { get; set; } = string.Empty;
-        public string Action { get; set; } = string.Empty;
-        public string? Description { get; set; }
-        public DateTime CreatedAt { get; set; }
     }
 }
