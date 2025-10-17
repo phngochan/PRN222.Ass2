@@ -30,6 +30,7 @@ builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
 // Vehicle & Inventory
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IVehicleAllocationRepository, VehicleAllocationRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 
 // Orders & Payments
@@ -51,11 +52,12 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ITestDriveService, TestDriveService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDealerService, DealerService>();
 builder.Services.AddScoped<IReportService, ReportService>();
-    
-// Allocation
-builder.Services.AddScoped<IVehicleAllocationRepository, VehicleAllocationRepository>();
 builder.Services.AddScoped<IAllocationService, AllocationService>();
+
+
 
 // ========== Add Authen ==========
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
