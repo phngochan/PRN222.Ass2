@@ -115,7 +115,7 @@
                     <h6 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-user-plus"></i> Users mới nhất
                     </h6>
-                    <a asp-page="/User/Index" class="btn btn-sm btn-primary">
+                    <a asp-page="/UsersManagement/Index" class="btn btn-sm btn-primary">
                         <i class="fas fa-eye"></i> Xem tất cả
                     </a>
                 </div>
@@ -148,7 +148,7 @@
                                             </td>
                                             <td>@user.CreatedDate.ToString("dd/MM/yyyy")</td>
                                             <td>
-                                                <a asp-page="/User/Details" asp-route-id="@user.Id"
+                                                <a asp-page="/UsersManagement/Details" asp-route-id="@user.Id"
                                                    class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
@@ -179,10 +179,10 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a asp-page="/User/Create" class="btn btn-success btn-block">
+                        <a asp-page="/UsersManagement/Create" class="btn btn-success btn-block">
                             <i class="fas fa-user-plus"></i> Thêm User mới
                         </a>
-                        <a asp-page="/User/Index" class="btn btn-info btn-block">
+                        <a asp-page="/UsersManagement/Index" class="btn btn-info btn-block">
                             <i class="fas fa-users"></i> Quản lý Users
                         </a>
                         <a asp-page="/DealersManagement/Create" class="btn btn-warning btn-block">

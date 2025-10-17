@@ -25,7 +25,7 @@ public class DetailsModel : BaseCrudPageModel
             if (dealer == null)
             {
                 SetError("Không tìm thấy đại lý.");
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
 
             ViewModel = MappingHelper.MapToDealerDetailsViewModel(dealer);

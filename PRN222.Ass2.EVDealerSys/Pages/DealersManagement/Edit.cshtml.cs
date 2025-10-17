@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
-using PRN222.Ass2.EVDealerSys.Models;
 using PRN222.Ass2.EVDealerSys.Hubs;
+using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.DealersManagement;
 
@@ -29,7 +29,7 @@ public class EditModel : BaseCrudPageModel
             if (dealer == null)
             {
                 SetError("Không tìm thấy đại lý.");
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
 
             ViewModel = new EditDealerViewModel
@@ -75,7 +75,7 @@ public class EditModel : BaseCrudPageModel
 
             SetSuccess("Cập nhật thông tin đại lý thành công!");
             await LogAsync("Edit Dealer", $"ID={ViewModel.Id}");
-            
+
             // Send SignalR notification
             await _hubContext.Clients.All.SendAsync("ReceiveDealerUpdated", new
             {
@@ -84,7 +84,7 @@ public class EditModel : BaseCrudPageModel
                 address = ViewModel.Address,
                 region = ViewModel.Region
             });
-            
+
             return RedirectToPage(nameof(Index));
         }
         catch (Exception)

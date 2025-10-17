@@ -1,0 +1,151 @@
+@page
+@model             CreateModel
+@{
+    ViewData["Title"] = "Thêm User mới";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-user-plus"></i> Thêm User mới</h4>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a asp-page="Index">Quản lý User</a></li>
+                            <li class="breadcrumb-item active">Thêm mới</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="card-body">
+                    <form asp-page="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="ViewModel.Name" class="form-label">
+                                        <i class="fas fa-user"></i> Tên <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="ViewModel.Name" class="form-control" placeholder="Nhập tên user" />
+                                    <span asp-validation-for="ViewModel.Name" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="ViewModel.Email" class="form-label">
+                                        <i class="fas fa-envelope"></i> Email <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="ViewModel.Email" class="form-control" placeholder="Nhập email" />
+                                    <span asp-validation-for="ViewModel.Email" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="ViewModel.Phone" class="form-label">
+                                        <i class="fas fa-phone"></i> Số điện thoại
+                                    </label>
+                                    <input asp-for="ViewModel.Phone" class="form-control" placeholder="Nhập số điện thoại" />
+                                    <span asp-validation-for="ViewModel.Phone" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="ViewModel.Role" class="form-label">
+                                        <i class="fas fa-user-tag"></i> Role <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="ViewModel.Role" class="form-select" asp-items="ViewBag.RoleOptions">
+                                    </select>
+                                    <span asp-validation-for="ViewModel.Role" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label asp-for="ViewModel.DealerId" class="form-label">
+                                        <i class="fas fa-building"></i> Dealer
+                                    </label>
+                                    <select asp-for="ViewModel.DealerId" class="form-select" asp-items="ViewBag.DealerOptions">
+                                    </select>
+                                    <span asp-validation-for="ViewModel.DealerId" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="ViewModel.Password" class="form-label">
+                                        <i class="fas fa-lock"></i> Mật khẩu <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="ViewModel.Password" class="form-control" placeholder="Nhập mật khẩu" />
+                                    <span asp-validation-for="ViewModel.Password" class="text-danger"></span>
+                                    <div class="form-text">Mật khẩu phải có ít nhất 6 ký tự</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="ViewModel.ConfirmPassword" class="form-label">
+                                        <i class="fas fa-lock"></i> Xác nhận mật khẩu <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="ViewModel.ConfirmPassword" class="form-control" placeholder="Nhập lại mật khẩu" />
+                                    <span asp-validation-for="ViewModel.ConfirmPassword" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Lưu ý:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Tất cả các trường có dấu <span class="text-danger">*</span> là bắt buộc</li>
+                                    <li>Email phải có định dạng hợp lệ và chưa được sử dụng</li>
+                                    <li>Mật khẩu phải có ít nhất 6 ký tự</li>
+                                    <li>Role: Admin (1), Manager (2), Staff (3)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-page="Index" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> Hủy bỏ
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Lưu User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Show/hide password
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add toggle password visibility if needed
+
+            // Form validation feedback
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function (e) {
+                if (!form.checkValidity()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            });
+        });
+    </script>
+}

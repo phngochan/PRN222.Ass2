@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
-using PRN222.Ass2.EVDealerSys.Models;
 using PRN222.Ass2.EVDealerSys.Hubs;
+using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.DealersManagement;
 
@@ -29,7 +29,7 @@ public class DeleteModel : BaseCrudPageModel
             if (dealer == null)
             {
                 SetError("Không tìm thấy đại lý.");
-                return RedirectToPage("./Index");
+                return NotFound();
             }
 
             ViewModel = new DeleteDealerViewModel
@@ -65,7 +65,7 @@ public class DeleteModel : BaseCrudPageModel
             {
                 SetSuccess("Xóa đại lý thành công!");
                 await LogAsync("Delete Dealer", $"Deleted: {ViewModel.Name} (ID={ViewModel.Id})");
-                
+
                 // Send SignalR notification
                 await _hubContext.Clients.All.SendAsync("ReceiveDealerDeleted", new
                 {

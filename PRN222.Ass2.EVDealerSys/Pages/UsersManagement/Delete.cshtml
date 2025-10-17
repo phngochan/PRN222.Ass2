@@ -1,0 +1,170 @@
+@page
+@model             DeleteModel
+@{
+    ViewData["Title"] = "Xóa User";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Xác nhận xóa User
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <i class="fas fa-warning"></i>
+                        <strong>Cảnh báo:</strong> Bạn có chắc chắn muốn xóa user này không?
+                        Hành động này không thể hoàn tác!
+                    </div>
+
+                    <div class="user-info-card">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar bg-light p-3 rounded-circle me-3">
+                                <i class="fas fa-user fa-2x text-muted"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">@Model.ViewModel.Name</h5>
+                                <span class="badge bg-@(GetRoleBadgeClass(Model.ViewModel.Role))">
+                                    @Model.ViewModel.RoleName
+                                </span>
+                            </div>
+                        </div>
+
+                        <table class="table table-borderless table-sm">
+                            <tr>
+                                <td width="30%" class="fw-bold">ID:</td>
+                                <td>@Model.ViewModel.Id</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Email:</td>
+                                <td>@Model.ViewModel.Email</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Số điện thoại:</td>
+                                <td>@(Model.ViewModel.Phone ?? "N/A")</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Role:</td>
+                                <td>
+                                    <span class="badge bg-@(GetRoleBadgeClass(Model.ViewModel.Role))">
+                                        @Model.ViewModel.RoleName
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">Dealer:</td>
+                                <td>@(Model.ViewModel.DealerName ?? "N/A")</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Lưu ý:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Tất cả dữ liệu liên quan đến user này sẽ bị ảnh hưởng</li>
+                            <li>Các đơn hàng đã tạo bởi user này vẫn được giữ lại</li>
+                            <li>User sẽ không thể đăng nhập vào hệ thống</li>
+                            <li>Hành động này không thể hoàn tác</li>
+                        </ul>
+                    </div>
+
+                    <form asp-page="Delete" method="post" class="mt-4">
+                        <input type="hidden" asp-for="ViewModel.Id" />
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a asp-page="Index" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times"></i> Hủy bỏ
+                            </a>
+                            <a asp-page="Details" asp-route-id="@Model.ViewModel.Id" class="btn btn-info me-md-2">
+                                <i class="fas fa-eye"></i> Xem chi tiết
+                            </a>
+                            <button type="submit" class="btn btn-danger" onclick="return confirmDelete()">
+                                <i class="fas fa-trash"></i> Xác nhận xóa
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Navigation breadcrumb -->
+            <nav aria-label="breadcrumb" class="mt-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-page="Index">Quản lý User</a></li>
+                    <li class="breadcrumb-item"><a asp-page="Details" asp-route-id="@Model.ViewModel.Id">Chi tiết #@Model.ViewModel.Id</a></li>
+                    <li class="breadcrumb-item active">Xóa User</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+@functions {
+    public string GetRoleBadgeClass(int role)
+    {
+        return role switch
+        {
+            1 => "danger",   // Admin - Red
+            2 => "warning",  // Manager - Yellow
+            3 => "info",     // Staff - Blue
+            _ => "secondary" // Unknown - Gray
+        };
+    }
+}
+
+<style>
+    .user-info-card {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        border: 1px solid #dee2e6;
+    }
+
+    .avatar {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function confirmDelete() {
+            return confirm('Bạn có chắc chắn muốn xóa user "@Model.ViewModel.Name" không?\n\nHành động này không thể hoàn tác!');
+        }
+
+        // Add warning animation
+        document.addEventListener('DOMContentLoaded', function () {
+            const deleteBtn = document.querySelector('button[type="submit"]');
+            deleteBtn.addEventListener('mouseenter', function () {
+                this.classList.add('pulse');
+            });
+            deleteBtn.addEventListener('mouseleave', function () {
+                this.classList.remove('pulse');
+            });
+        });
+    </script>
+
+    <style>
+        .pulse {
+            animation: pulse 1s infinite;
+        }
+
+        /* keyframes pulse { */
+        /*     0% { */
+        /*         transform: scale(1); */
+        /*     } */
+        /*     50% { */
+        /*         transform: scale(1.05); */
+        /*     } */
+        /*     100% { */
+        /*         transform: scale(1); */
+        /*     } */
+        /* } */
+    </style>
+}

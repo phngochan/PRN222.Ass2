@@ -28,8 +28,4 @@
     <ProjectReference Include="..\PRN222.Ass2.EVDealerSys.BusinessObjects\PRN222.Ass2.EVDealerSys.BusinessObjects.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Pages\VehiclesManagement\" />
-  </ItemGroup>
-
 </Project>
