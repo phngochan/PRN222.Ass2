@@ -42,11 +42,9 @@ namespace PRN222.Ass2.EVDealerSys.Models
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Tên là bắt buộc")]
         [StringLength(255, ErrorMessage = "Tên không được vượt quá 255 ký tự")]
         public string Name { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Email là bắt buộc")]
         [EmailAddress(ErrorMessage = "Email không đúng định dạng")]
         [StringLength(255, ErrorMessage = "Email không được vượt quá 255 ký tự")]
         public string Email { get; set; } = string.Empty;
@@ -60,8 +58,6 @@ namespace PRN222.Ass2.EVDealerSys.Models
 
         public int? DealerId { get; set; }
 
-        // Password is optional for edit
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "Mật khẩu phải có từ 6 đến 100 ký tự")]
         [DataType(DataType.Password)]
         public string? Password { get; set; }
 

@@ -16,6 +16,7 @@ public class DeleteModel : PageModel
         _userService = userService;
     }
 
+    [BindProperty]
     public UserItemViewModel ViewModel { get; set; } = new();
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -39,11 +40,11 @@ public class DeleteModel : PageModel
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync(int id)
+    public async Task<IActionResult> OnPostAsync()
     {
         if (!HasRole(1))
             return Forbid();
-        var result = await _userService.DeleteUserAsync(id);
+        var result = await _userService.DeleteUserAsync(ViewModel.Id);
         if (result.Success)
         {
             TempData["SuccessMessage"] = result.Message;

@@ -102,6 +102,7 @@ app.UseMiddleware<StartPageRedirectMiddleware>();
 
 app.MapHub<OrderHub>("/orderHub");
 app.MapHub<ManagementHub>("/managementHub");
+app.MapHub<VehicleHub>("/vehicleHub");
 
 app.MapRazorPages();
 

@@ -32,10 +32,6 @@ public class IndexModel : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-        // Only Admin and Manager can manage users
-        if (!HasRole(1) && !HasRole(2))
-            return Forbid();
-
         IEnumerable<User> users;
         if (!string.IsNullOrWhiteSpace(SearchTerm))
             users = await _userService.SearchUsersAsync(SearchTerm);
@@ -97,10 +93,5 @@ public class IndexModel : PageModel
         }
         catch { }
         return dealers;
-    }
-    private bool HasRole(int role)
-    {
-        // Implement your role check logic here
-        return true;
     }
 }

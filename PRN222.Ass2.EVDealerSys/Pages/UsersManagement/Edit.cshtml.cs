@@ -40,6 +40,7 @@ public class EditModel : PageModel
             DealerName = user.Dealer?.Name,
             RoleName = _userService.GetRoleName(user.Role)
         };
+
         RoleOptions = GetRoleSelectList();
         DealerOptions = await GetDealerSelectList();
         return Page();
@@ -53,17 +54,26 @@ public class EditModel : PageModel
             DealerOptions = await GetDealerSelectList();
             return Page();
         }
-        var user = new User
+        
+        // Get existing user first
+        var existingUser = await _userService.GetUserByIdAsync(ViewModel.Id);
+        if (existingUser == null)
         {
-            Id = ViewModel.Id,
-            Name = ViewModel.Name,
-            Email = ViewModel.Email,
-            Phone = ViewModel.Phone,
-            Role = ViewModel.Role,
-            DealerId = ViewModel.DealerId,
-            Password = ViewModel.Password
-        };
-        var result = await _userService.UpdateUserAsync(user);
+            ModelState.AddModelError("", "User không tồn tại!");
+            RoleOptions = GetRoleSelectList();
+            DealerOptions = await GetDealerSelectList();
+            return Page();
+        }
+
+        // Update properties
+        existingUser.Name = ViewModel.Name;
+        existingUser.Email = ViewModel.Email;
+        existingUser.Phone = ViewModel.Phone;
+        existingUser.Role = ViewModel.Role;
+        existingUser.DealerId = ViewModel.DealerId;
+        existingUser.Password = string.IsNullOrWhiteSpace(ViewModel.Password) ? null : ViewModel.Password;
+
+        var result = await _userService.UpdateUserAsync(existingUser);
         if (result.Success)
         {
             TempData["SuccessMessage"] = result.Message;
