@@ -5,7 +5,6 @@
 }
 
 <style>
-    /* CSS cho hiệu ứng highlight khi có cập nhật */
     .update-highlight {
         animation: highlight-yellow 2s ease-out;
     }
@@ -14,7 +13,6 @@
         0% {
             background-color: #ffc107;
         }
-        /* Màu vàng */
         100% {
             background-color: transparent;
         }
@@ -242,14 +240,11 @@
             .configureLogging(signalR.LogLevel.Information)
             .build();
 
-        // 🟢 Khi nhận đơn hàng mới
         connection.on("ReceiveNewOrder", function (order) {
             console.log("📦 Đơn hàng mới:", order);
-            // Reload lại trang để hiển thị đơn mới nhất cùng với modal và các chức năng đầy đủ.
             location.reload();
         });
 
-        // 🟡 Khi nhận cập nhật trạng thái đơn hàng (Thanh toán / Hủy)
         connection.on("ReceiveOrderStatusUpdate", function (update) {
             console.log("🔁 Cập nhật trạng thái:", update);
             const row = $(`#order-row-${update.id}`);
@@ -265,32 +260,25 @@
 
                 statusCell.html(badgeHtml);
 
-                // Vô hiệu hóa tất cả các nút hành động
                 row.find(".order-actions button").prop('disabled', true);
             }
         });
 
-        // 🟣 Khi nhận cập nhật chỉnh sửa đơn hàng (thay đổi xe, số lượng)
         connection.on("ReceiveOrderUpdate", function (data) {
             console.log("✏️ Cập nhật đơn hàng:", data);
             const row = $(`#order-row-${data.id}`);
             if (row.length > 0) {
-                // Cập nhật dòng chính
                 row.find(".order-total-price").text(data.totalPrice);
                 row.find(".order-quantity").text(data.quantity);
 
-                // Cập nhật dòng chi tiết
                 const detailCell = $(`#detail-${data.id}`).find(".order-detail-cell");
                 if(detailCell.length > 0) {
-                    // Loại bỏ ký tự tiền tệ và dấu chấm để chuyển đơn giá thành số thực
                     const unitPriceString = data.unitPrice.replace(/\./g, '').replace(' đ', '');
                     const unitPriceNum = parseFloat(unitPriceString);
                     const quantityNum = parseInt(data.quantity);
 
-                    // Tính toán tổng giá trị chi tiết
                     const totalDetailPriceNum = unitPriceNum * quantityNum;
 
-                    // Định dạng lại tổng giá trị chi tiết thành chuỗi tiền tệ Việt Nam
                     const totalDetailPriceFormatted = isNaN(totalDetailPriceNum)
                         ? 'Lỗi định dạng'
                         : totalDetailPriceNum.toLocaleString('vi-VN') + ',000,000 đ';
@@ -307,7 +295,6 @@
                     detailCell.html(detailHtml);
                 }
 
-                // Thêm hiệu ứng highlight để người dùng dễ nhận biết
                 row.addClass("update-highlight");
                 setTimeout(() => row.removeClass("update-highlight"), 2000);
             }

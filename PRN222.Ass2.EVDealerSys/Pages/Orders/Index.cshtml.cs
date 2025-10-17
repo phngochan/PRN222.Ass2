@@ -21,7 +21,7 @@ namespace PRN222.Ass2.EVDealerSys.Pages.Orders
         private readonly IPaymentService _paymentService;
         private readonly IHubContext<OrderHub> _orderHubContext;
 
-        public List<BusinessObjects.Models.Order> PagedOrders { get; set; } = new List<BusinessObjects.Models.Order>();
+        public List<Order> PagedOrders { get; set; } = new List<Order>();
         public List<Customer> Customers { get; set; } = new List<Customer>();
         public List<VehicleView> Vehicles { get; set; } = new List<VehicleView>();
 
@@ -106,12 +106,11 @@ namespace PRN222.Ass2.EVDealerSys.Pages.Orders
             return RedirectToPage();
         }
 
-        // HÀM MỚI: Xử lý chỉnh sửa đơn hàng
         public async Task<IActionResult> OnPostEdit()
         {
             try
             {
-                _orderService.EditOrder(OrderId, VehicleId, Quantity); // Giả sử bạn có service này
+                _orderService.EditOrder(OrderId, VehicleId, Quantity); 
                 TempData["Message"] = "Cập nhật đơn hàng thành công!";
 
                 var updatedOrder = _orderService.GetOrdersByDealer(1).FirstOrDefault(o => o.Id == OrderId);
@@ -160,7 +159,6 @@ namespace PRN222.Ass2.EVDealerSys.Pages.Orders
             return RedirectToPage();
         }
 
-        // CẬP NHẬT: Thêm gửi SignalR cho hàm hủy đơn
         public async Task<IActionResult> OnPostCancel()
         {
             try
@@ -168,7 +166,6 @@ namespace PRN222.Ass2.EVDealerSys.Pages.Orders
                 _orderService.CancelOrder(OrderId);
                 TempData["Message"] = "Đơn hàng đã được hủy và trả về kho.";
 
-                // Gửi thông báo cập nhật trạng thái đến tất cả client
                 await _orderHubContext.Clients.All.SendAsync("ReceiveOrderStatusUpdate", new
                 {
                     id = OrderId,
