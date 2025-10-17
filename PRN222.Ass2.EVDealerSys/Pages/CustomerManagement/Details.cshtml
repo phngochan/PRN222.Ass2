@@ -53,13 +53,13 @@
                     </div>
 
                     <div class="mt-4">
-                        <a asp-action="Edit" asp-route-id="@Model.ViewModel.Id" class="btn btn-warning">
+                        <a asp-page="Edit" asp-route-id="@Model.ViewModel.Id" class="btn btn-warning">
                             <i class="fas fa-edit"></i> Chỉnh sửa
                         </a>
-                        <a asp-action="Delete" asp-route-id="@Model.ViewModel.Id" class="btn btn-danger">
+                        <a asp-page="Delete" asp-route-id="@Model.ViewModel.Id" class="btn btn-danger">
                             <i class="fas fa-trash"></i> Xóa
                         </a>
-                        <a asp-action="Index" class="btn btn-secondary">
+                        <a asp-page="Index" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Quay lại
                         </a>
                     </div>

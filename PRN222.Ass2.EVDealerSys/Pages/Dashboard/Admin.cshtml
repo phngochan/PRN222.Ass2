@@ -115,7 +115,7 @@
                     <h6 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-user-plus"></i> Users mới nhất
                     </h6>
-                    <a asp-controller="User" asp-action="Index" class="btn btn-sm btn-primary">
+                    <a asp-page="/User/Index" class="btn btn-sm btn-primary">
                         <i class="fas fa-eye"></i> Xem tất cả
                     </a>
                 </div>
@@ -148,7 +148,7 @@
                                             </td>
                                             <td>@user.CreatedDate.ToString("dd/MM/yyyy")</td>
                                             <td>
-                                                <a asp-controller="User" asp-action="Details" asp-route-id="@user.Id"
+                                                <a asp-page="/User/Details" asp-route-id="@user.Id"
                                                    class="btn btn-sm btn-info">
                                                     <i class="fas fa-eye"></i>
                                                 </a>

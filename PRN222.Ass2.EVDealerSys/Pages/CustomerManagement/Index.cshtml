@@ -101,7 +101,7 @@
             </h6>
         </div>
         <div class="card-body">
-            <form method="get" asp-action="Index">
+            <form method="get" asp-page="Index">
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Tên khách hàng</label>
@@ -188,15 +188,15 @@
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a asp-action="Details" asp-route-id="@customer.Id"
+                                            <a asp-page="Details" asp-route-id="@customer.Id"
                                                class="btn btn-sm btn-info" title="Chi tiết">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a asp-action="Edit" asp-route-id="@customer.Id"
+                                            <a asp-page="Edit" asp-route-id="@customer.Id"
                                                class="btn btn-sm btn-warning" title="Sửa">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a asp-action="Delete" asp-route-id="@customer.Id"
+                                            <a asp-page="Delete" asp-route-id="@customer.Id"
                                                class="btn btn-sm btn-danger" title="Xóa">
                                                 <i class="fas fa-trash"></i>
                                             </a>
@@ -212,16 +212,16 @@
                 <nav aria-label="Customer pagination">
                     <ul class="pagination justify-content-center">
                         <li class="page-item @(Model.ViewModel.CurrentPage == 1 ? "disabled" : "")">
-                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.ViewModel.CurrentPage - 1)">Trước</a>
+                            <a class="page-link" asp-page="Index" asp-route-page="@(Model.ViewModel.CurrentPage - 1)">Trước</a>
                         </li>
                         @for (int i = 1; i <= Model.ViewModel.TotalPages; i++)
                         {
                             <li class="page-item @(i == Model.ViewModel.CurrentPage ? "active" : "")">
-                                <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                                <a class="page-link" asp-page="Index" asp-route-page="@i">@i</a>
                             </li>
                         }
                         <li class="page-item @(Model.ViewModel.CurrentPage == Model.ViewModel.TotalPages ? "disabled" : "")">
-                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.ViewModel.CurrentPage + 1)">Sau</a>
+                            <a class="page-link" asp-page="Index" asp-route-page="@(Model.ViewModel.CurrentPage + 1)">Sau</a>
                         </li>
                     </ul>
                 </nav>

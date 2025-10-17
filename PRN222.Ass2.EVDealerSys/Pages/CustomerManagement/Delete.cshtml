@@ -55,13 +55,13 @@
                         </div>
                     </div>
 
-                    <form asp-action="Delete" method="post">
+                    <form asp-page="Delete" method="post">
                         <input type="hidden" asp-for="ViewModel.Id" />
                         <div class="form-group">
                             <button type="submit" class="btn btn-danger">
                                 <i class="fas fa-trash"></i> Xác nhận xóa
                             </button>
-                            <a asp-action="Index" class="btn btn-secondary">
+                            <a asp-page="Index" class="btn btn-secondary">
                                 <i class="fas fa-times"></i> Hủy
                             </a>
                         </div>
