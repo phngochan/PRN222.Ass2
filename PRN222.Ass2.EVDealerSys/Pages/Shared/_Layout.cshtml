@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -27,7 +27,7 @@
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item">
-                                <a class="nav-link ev-nav-link" asp-area="" asp-controller="Dashboard" asp-action="Index">
+                                <a class="nav-link ev-nav-link" asp-page="/Dashboard/Index">
                                     <i class="fas fa-tachometer-alt"></i> Dashboard
                                 </a>
                             </li>
@@ -35,7 +35,7 @@
                             @if (User.IsInRole("1") || User.IsInRole("2"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link ev-nav-link" asp-area="" asp-controller="User" asp-action="Index">
+                                    <a class="nav-link ev-nav-link" asp-page="/User/Index">
                                         <i class="fas fa-users"></i> Quản lý User
                                     </a>
                                 </li>
@@ -46,21 +46,21 @@
                                     <i class="fas fa-cog"></i> Quản lý
                                 </a>
                                 <ul class="dropdown-menu ev-dropdown-menu">
-                                    <li><a class="dropdown-item ev-dropdown-item" asp-area="" asp-controller="VehiclesManagement" asp-action="Index"><i class="fas fa-car"></i> Xe</a></li>
+                                    <li><a class="dropdown-item ev-dropdown-item" asp-page="/VehiclesManagement/Index"><i class="fas fa-car"></i> Xe</a></li>
                                     <li>
                                         <a class="dropdown-item ev-dropdown-item" asp-page="/TestDrives/Index">
                                             <i class="fas fa-calendar-alt"></i> Lịch Thử Xe
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item ev-dropdown-item" asp-area="" asp-controller="CustomersManagement" asp-action="Index"><i class="fas fa-users"></i> Khách hàng</a></li>
+                                    <li><a class="dropdown-item ev-dropdown-item" asp-page="/CustomerManagement/Index"><i class="fas fa-users"></i> Khách hàng</a></li>
                                     <li>
-                                        <a class="dropdown-item ev-dropdown-item" asp-controller="Orders" asp-action="Index">
+                                        <a class="dropdown-item ev-dropdown-item" asp-page="/Orders/Index">
                                             <i class="fas fa-shopping-cart"></i> Đơn Hàng
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item ev-dropdown-item" asp-area="" asp-controller="DealersManagement" asp-action="Index"><i class="fas fa-building"></i> Đại lý</a></li>
+                                    <li><a class="dropdown-item ev-dropdown-item" asp-page="/DealersManagement/Index"><i class="fas fa-building"></i> Đại lý</a></li>
                                 </ul>
                             </li>
 
@@ -147,6 +147,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.14/dist/browser/signalr.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

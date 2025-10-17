@@ -1,0 +1,339 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.CustomerManagement.IndexModel
+@{
+    ViewData["Title"] = "Quản lý Khách hàng";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-gray-800 mb-1">
+                <i class="fas fa-users"></i> Quản lý Khách hàng
+            </h2>
+            <p class="text-muted mb-0">Quản lý khách hàng trong hệ thống</p>
+        </div>
+        <a asp-page="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm khách hàng mới
+        </a>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-gray-800 text-uppercase mb-1">
+                                Tổng khách hàng
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ViewModel.TotalCustomers</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Khách hàng có đơn
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ViewModel.CustomersWithOrders</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shopping-cart fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Tổng đơn hàng
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ViewModel.TotalOrders</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Khách hàng mới (tháng)
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ViewModel.NewCustomersThisMonth</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-plus fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary text-white">
+            <h6 class="m-0 font-weight-bold">
+                <i class="fas fa-filter"></i> Tìm kiếm & Lọc
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="get" asp-action="Index">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Tên khách hàng</label>
+                        <input type="text" name="searchName" class="form-control" placeholder="Nhập tên..." value="@Model.ViewModel.SearchName">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="text" name="searchEmail" class="form-control" placeholder="Nhập email..." value="@Model.ViewModel.SearchEmail">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="text" name="searchPhone" class="form-control" placeholder="Nhập SĐT..." value="@Model.ViewModel.SearchPhone">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Đại lý</label>
+                        <select name="dealerId" class="form-control">
+                            <option value="">Tất cả đại lý</option>
+                            @foreach (var dealer in Model.ViewModel.AvailableDealers)
+                            {
+                                <option value="@dealer.Id" selected="@(dealer.Id == Model.ViewModel.SelectedDealerId)">
+                                    @dealer.Name - @dealer.Region
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label d-block">&nbsp;</label>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Customer Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-gray-800">
+                <i class="fas fa-list"></i> Danh sách Khách hàng
+            </h6>
+        </div>
+        <div class="card-body">
+            @if (Model.ViewModel.Customers.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên khách hàng</th>
+                                <th>Email</th>
+                                <th>Số điện thoại</th>
+                                <th>Địa chỉ</th>
+                                <th>Đại lý</th>
+                                <th>Số đơn hàng</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var customer in Model.ViewModel.Customers)
+                            {
+                                <tr>
+                                    <td>@customer.Id</td>
+                                    <td>
+                                        <strong>@customer.Name</strong>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-envelope text-muted"></i> @customer.Email
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-phone text-muted"></i> @customer.Phone
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-map-marker-alt text-muted"></i> @customer.Address
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-info">@customer.DealerName</span>
+                                        <br><small class="text-muted">@customer.DealerRegion</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-primary">@customer.OrderCount</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@customer.Id"
+                                               class="btn btn-sm btn-info" title="Chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@customer.Id"
+                                               class="btn btn-sm btn-warning" title="Sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@customer.Id"
+                                               class="btn btn-sm btn-danger" title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <nav aria-label="Customer pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(Model.ViewModel.CurrentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.ViewModel.CurrentPage - 1)">Trước</a>
+                        </li>
+                        @for (int i = 1; i <= Model.ViewModel.TotalPages; i++)
+                        {
+                            <li class="page-item @(i == Model.ViewModel.CurrentPage ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(Model.ViewModel.CurrentPage == Model.ViewModel.TotalPages ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@(Model.ViewModel.CurrentPage + 1)">Sau</a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                    <p class="text-muted">Không tìm thấy khách hàng nào</p>
+                    <a asp-page="Create" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Thêm khách hàng đầu tiên
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-primary {
+        background: linear-gradient(135deg, #3e5f44 0%, #5e936c 100%) !important;
+    }
+
+    .border-left-primary {
+        border-left: 0.25rem solid #3e5f44 !important;
+    }
+
+    .border-left-success {
+        border-left: 0.25rem solid #6b9b76 !important;
+    }
+
+    .border-left-info {
+        border-left: 0.25rem solid #93da97 !important;
+    }
+
+    .border-left-warning {
+        border-left: 0.25rem solid #5e936c !important;
+    }
+
+    .text-success {
+        color: #6b9b76 !important;
+    }
+
+    .text-info {
+        color: #5e936c !important;
+    }
+
+    .text-warning {
+        color: #93da97 !important;
+    }
+
+    .text-gray-300 {
+        color: #c5d9c9 !important;
+    }
+
+    .btn-primary {
+        background-color: #3e5f44;
+        border-color: #3e5f44;
+    }
+
+        .btn-primary:hover {
+            background-color: #2c3e2f;
+            border-color: #2c3e2f;
+        }
+
+    .btn-success {
+        background-color: #6b9b76;
+        border-color: #6b9b76;
+    }
+
+        .btn-success:hover {
+            background-color: #5e936c;
+            border-color: #5e936c;
+        }
+
+    .btn-info {
+        background-color: #93da97;
+        border-color: #93da97;
+        color: #2c3e2f;
+    }
+
+    .btn-warning {
+        background-color: #5e936c;
+        border-color: #5e936c;
+        color: white;
+    }
+
+    .badge-primary {
+        background-color: #3e5f44;
+    }
+
+    .badge-info {
+        background-color: #93da97;
+        color: #2c3e2f;
+    }
+
+    .thead-light {
+        background-color: #e8ffd7;
+        color: #2c3e2f;
+    }
+
+    .page-item.active .page-link {
+        background-color: #3e5f44;
+        border-color: #3e5f44;
+    }
+
+    .card {
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(62, 95, 68, 0.15) !important;
+        border: none;
+    }
+</style>
+
+@section Scripts {
+    <script src="~/js/managementHub.js"></script>
+}

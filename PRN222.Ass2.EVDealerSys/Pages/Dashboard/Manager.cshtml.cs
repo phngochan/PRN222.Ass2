@@ -7,7 +7,7 @@ using PRN222.Ass2.EVDealerSys.Models.Dashboard;
 namespace PRN222.Ass2.EVDealerSys.Pages.Dashboard
 {
     [Authorize(Roles = "2")]
-    public class ManagerModel : BaseDashboardPageModel<ManagerDashboardViewModel>
+    public class ManagerModel : BaseViewOnlyPageModel<ManagerDashboardViewModel>
     {
         private readonly IUserService _userService;
         private readonly IOrderService _orderService;

@@ -4,7 +4,7 @@ using PRN222.Ass2.EVDealerSys.Models.Dashboard;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.Dashboard
 {
-    public class StaffModel : BaseDashboardPageModel<StaffDashboardViewModel>
+    public class StaffModel : BaseViewOnlyPageModel<StaffDashboardViewModel>
     {
         private readonly IOrderService _orderService;
 
