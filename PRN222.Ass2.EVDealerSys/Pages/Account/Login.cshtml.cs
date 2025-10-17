@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
+
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
-using System.Security.Claims;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.Account
@@ -36,7 +38,7 @@ namespace PRN222.Ass2.EVDealerSys.Pages.Account
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Name ?? ""),
                 new Claim(ClaimTypes.Email, user.Email ?? ""),
-                new Claim(ClaimTypes.Role, user.Role?.ToString() ?? "0")
+                new Claim(ClaimTypes.Role, user.Role?.ToString() ?? "4")
             };
 
             if (user.DealerId.HasValue)

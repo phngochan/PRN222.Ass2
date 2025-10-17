@@ -162,8 +162,77 @@ public class TestDriveService(ITestDriveRepository testDriveRepo, ICustomerServi
         if (testDrive == null)
             return false;
 
+        // Validation: Check if status transition is valid
+        if (!IsValidStatusTransition(testDrive.Status ?? 1, status))
+            return false;
+
+        // Handle special logic for "No Show" status (Status = 6)
+        if (status == 6)
+        {
+            return await HandleNoShowStatusAsync(testDrive);
+        }
+
         testDrive.Status = status;
+        testDrive.UpdatedAt = DateTime.Now;
         await _testDriveRepo.UpdateAsync(testDrive);
+        return true;
+    }
+
+    /// <summary>
+    /// Validate status transitions to ensure only valid state changes are allowed
+    /// Status transitions:
+    /// 1 (Pending) → 2 (Confirmed), 4 (Cancelled), 5 (Customer Cancelled)
+    /// 2 (Confirmed) → 3 (Completed), 4 (Cancelled), 5 (Customer Cancelled), 6 (No Show)
+    /// 3, 4, 5, 6 → No transitions allowed (terminal states)
+    /// </summary>
+    private bool IsValidStatusTransition(int currentStatus, int newStatus)
+    {
+        if (currentStatus == newStatus)
+            return false; // Cannot change to same status
+
+        return (currentStatus, newStatus) switch
+        {
+            (1, 2) => true,  // Pending → Confirmed
+            (1, 4) => true,  // Pending → Cancelled
+            (1, 5) => true,  // Pending → Customer Cancelled
+            (2, 3) => true,  // Confirmed → Completed
+            (2, 4) => true,  // Confirmed → Cancelled
+            (2, 5) => true,  // Confirmed → Customer Cancelled
+            (2, 6) => true,  // Confirmed → No Show
+            _ => false       // All other transitions are invalid
+        };
+    }
+
+    /// <summary>
+    /// Handle special logic when marking a test drive as "No Show" (Status = 6)
+    /// This typically occurs when customer was confirmed but didn't show up
+    /// </summary>
+    private async Task<bool> HandleNoShowStatusAsync(TestDrive testDrive)
+    {
+        // Only allow marking as No Show if previously Confirmed (Status = 2)
+        if (testDrive.Status != 2)
+            return false;
+
+        // Update status to No Show
+        testDrive.Status = 6;
+        testDrive.UpdatedAt = DateTime.Now;
+
+        // Add automatic note if not already present
+        if (string.IsNullOrEmpty(testDrive.Notes))
+        {
+            testDrive.Notes = $"[Hệ thống] Khách hàng không đến vào {DateTime.Now:dd/MM/yyyy HH:mm}";
+        }
+        else if (!testDrive.Notes.Contains("Không đến"))
+        {
+            testDrive.Notes += $"\n[Hệ thống] Khách hàng không đến vào {DateTime.Now:dd/MM/yyyy HH:mm}";
+        }
+
+        await _testDriveRepo.UpdateAsync(testDrive);
+
+        // TODO: Consider adding customer reputation/penalty logic here
+        // Example: Update customer's "no-show" counter
+        // Example: Restrict customer from booking if too many no-shows
+        
         return true;
     }
 
