@@ -69,7 +69,7 @@ namespace PRN222.Ass2.EVDealerSys.Pages.ActivityLogs
                         UserName = l.User?.Name ?? "N/A",
                         Action = l.Action ?? "",
                         Description = l.Description,
-                        CreatedAt = l.CreatedAt ?? DateTime.Now
+                        CreatedAt = l.CreatedAt != null ? l.CreatedAt : DateTime.Now
                     })
                     .ToList();
 

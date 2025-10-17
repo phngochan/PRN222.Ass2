@@ -1,3 +1,6 @@
+using System.Security.Cryptography;
+using System.Text;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -12,10 +15,26 @@ public static class DbInitializer
         var email = config["AdminAccount:Email"];
         var password = config["AdminAccount:Password"];
 
-        if (!await context.Users.AnyAsync(u => u.Email == email))
+        // Kiểm tra xem admin đã tồn tại chưa
+        var existingAdmin = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        
+        if (existingAdmin != null)
         {
-            context.Users.Add(new User { Email = email, Password = password, Role = 1, Name = "Default admin" });
+            // Xóa admin cũ để tạo lại với password đã hash
+            context.Users.Remove(existingAdmin);
             await context.SaveChangesAsync();
         }
+
+        // Tạo admin mới với password đã hash
+        var hashedPassword = HashPassword(password);
+        context.Users.Add(new User { Email = email, Password = hashedPassword, Role = 1, Name = "Default admin" });
+        await context.SaveChangesAsync();
+    }
+
+    private static string HashPassword(string password)
+    {
+        using var sha256 = SHA256.Create();
+        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return Convert.ToBase64String(hashedBytes);
     }
 }
