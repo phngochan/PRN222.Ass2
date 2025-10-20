@@ -1,0 +1,149 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.CustomerManagement.EditModel
+@{
+    ViewData["Title"] = "Chỉnh sửa Khách hàng";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-gradient-primary">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fas fa-edit"></i> Chỉnh sửa Khách hàng
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.ViewModel.OrderCount > 0)
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Khách hàng này có <strong>@Model.ViewModel.OrderCount đơn hàng</strong>. Thay đổi thông tin có thể ảnh hưởng đến các đơn hàng hiện tại.
+                        </div>
+                    }
+
+                    <form asp-page="Edit" method="post">
+                        <input type="hidden" asp-for="ViewModel.Id" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="form-group">
+                            <label asp-for="ViewModel.Name" class="control-label"></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                </div>
+                                <input asp-for="ViewModel.Name" class="form-control" />
+                            </div>
+                            <span asp-validation-for="ViewModel.Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ViewModel.Email" class="control-label"></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                </div>
+                                <input asp-for="ViewModel.Email" class="form-control" />
+                            </div>
+                            <span asp-validation-for="ViewModel.Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ViewModel.Phone" class="control-label"></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                </div>
+                                <input asp-for="ViewModel.Phone" class="form-control" />
+                            </div>
+                            <span asp-validation-for="ViewModel.Phone" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ViewModel.Address" class="control-label"></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                </div>
+                                <textarea asp-for="ViewModel.Address" class="form-control" rows="3"></textarea>
+                            </div>
+                            <span asp-validation-for="ViewModel.Address" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="ViewModel.DealerId" class="control-label"></label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                </div>
+                                <select asp-for="ViewModel.DealerId" class="form-control">
+                                    @if (Model.ViewModel.AvailableDealers != null)
+                                    {
+                                        @foreach (var dealer in Model.ViewModel.AvailableDealers)
+                                        {
+                                            <option value="@dealer.Id">@dealer.Name - @dealer.Region</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <span asp-validation-for="ViewModel.DealerId" class="text-danger"></span>
+                            @if (!string.IsNullOrEmpty(Model.ViewModel.CurrentDealerName))
+                            {
+                                <small class="form-text text-muted">Đại lý hiện tại: @Model.ViewModel.CurrentDealerName</small>
+                            }
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Cập nhật
+                            </button>
+                            <a asp-page="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #3e5f44 0%, #5e936c 100%);
+    }
+
+    .btn-primary {
+        background-color: #3e5f44;
+        border-color: #3e5f44;
+    }
+
+        .btn-primary:hover {
+            background-color: #2c3e2f;
+            border-color: #2c3e2f;
+        }
+
+    .input-group-text {
+        background-color: #e8ffd7;
+        border-color: #93da97;
+        color: #3e5f44;
+    }
+
+    .form-control:focus {
+        border-color: #5e936c;
+        box-shadow: 0 0 0 0.2rem rgba(62, 95, 68, 0.25);
+    }
+
+    .alert-info {
+        background-color: #e8ffd7;
+        border-color: #93da97;
+        color: #3e5f44;
+    }
+</style>
+

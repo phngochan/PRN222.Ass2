@@ -1,0 +1,168 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.DealersManagement.DeleteModel
+@{
+    ViewData["Title"] = "Xóa đại lý";
+}
+
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2 class="text-danger mb-1">
+            <i class="fas fa-exclamation-triangle"></i> Xóa đại lý
+        </h2>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="alert alert-danger">
+                <h5 class="alert-heading">
+                    <i class="fas fa-exclamation-triangle"></i> Cảnh báo!
+                </h5>
+                <p class="mb-0">Bạn có chắc chắn muốn xóa đại lý này? Hành động này không thể hoàn tác.</p>
+            </div>
+
+            @if (Model.ViewModel.HasRelatedData)
+            {
+                <div class="alert alert-warning">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-info-circle"></i> Dữ liệu liên quan
+                    </h6>
+                    <p>@Model.ViewModel.GetWarningMessage()</p>
+                    <hr>
+                    <p class="mb-0 small">
+                        <strong>Lưu ý:</strong> Việc xóa đại lý này có thể ảnh hưởng đến tính toàn vẹn của dữ liệu. 
+                        Vui lòng xem xét kỹ trước khi thực hiện.
+                    </p>
+                </div>
+            }
+
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-building"></i> Thông tin đại lý sẽ bị xóa
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3 font-weight-bold">ID:</div>
+                        <div class="col-md-9">@Model.ViewModel.Id</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 font-weight-bold">Tên đại lý:</div>
+                        <div class="col-md-9">
+                            <strong class="text-danger">@Model.ViewModel.Name</strong>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 font-weight-bold">Địa chỉ:</div>
+                        <div class="col-md-9">
+                            <i class="fas fa-map-marker-alt text-muted"></i> @Model.ViewModel.Address
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-3 font-weight-bold">Khu vực:</div>
+                        <div class="col-md-9">
+                            <span class="badge badge-info">@Model.ViewModel.Region</span>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h6 class="font-weight-bold mb-3">Dữ liệu liên quan:</h6>
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 border rounded">
+                                <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                                <div class="h5 mb-0">@Model.ViewModel.CustomerCount</div>
+                                <small class="text-muted">Khách hàng</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 border rounded">
+                                <i class="fas fa-warehouse fa-2x text-success mb-2"></i>
+                                <div class="h5 mb-0">@Model.ViewModel.InventoryCount</div>
+                                <small class="text-muted">Kho hàng</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 border rounded">
+                                <i class="fas fa-shopping-cart fa-2x text-info mb-2"></i>
+                                <div class="h5 mb-0">@Model.ViewModel.OrderCount</div>
+                                <small class="text-muted">Đơn hàng</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="p-3 border rounded">
+                                <i class="fas fa-user-tie fa-2x text-warning mb-2"></i>
+                                <div class="h5 mb-0">@Model.ViewModel.UserCount</div>
+                                <small class="text-muted">Người dùng</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        <input type="hidden" asp-for="ViewModel.Id" />
+                        <input type="hidden" asp-for="ViewModel.Name" />
+                        <div class="form-group d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Xác nhận xóa
+                            </button>
+                            <a asp-page="Details" asp-route-id="@Model.ViewModel.Id" class="btn btn-info">
+                                <i class="fas fa-eye"></i> Xem chi tiết
+                            </a>
+                            <a asp-page="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .text-primary {
+        color: #3e5f44 !important;
+    }
+
+    .text-success {
+        color: #6b9b76 !important;
+    }
+
+    .text-info {
+        color: #5e936c !important;
+    }
+
+    .btn-info {
+        background-color: #93da97;
+        border-color: #93da97;
+        color: #2c3e2f;
+    }
+
+    .btn-info:hover {
+        background-color: #7ec883;
+        border-color: #7ec883;
+    }
+
+    .badge-info {
+        background-color: #93da97;
+        color: #2c3e2f;
+    }
+
+    .breadcrumb-item a {
+        color: #3e5f44;
+        text-decoration: none;
+    }
+
+    .breadcrumb-item a:hover {
+        color: #5e936c;
+    }
+
+    .alert-warning {
+        background-color: #fff8e1;
+        border-color: #5e936c;
+        color: #2c3e2f;
+    }
+</style>
+
+

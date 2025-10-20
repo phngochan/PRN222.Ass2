@@ -7,7 +7,7 @@ using PRN222.Ass2.EVDealerSys.Models.Dashboard;
 namespace PRN222.Ass2.EVDealerSys.Pages.Dashboard;
 
 [Authorize(Roles = "1")]
-public class AdminModel : BaseDashboardPageModel<AdminDashboardViewModel>
+public class AdminModel : BaseViewOnlyPageModel<AdminDashboardViewModel>
 {
     private readonly IUserService _userService;
     private readonly IDealerService _dealerService;
@@ -31,10 +31,10 @@ public class AdminModel : BaseDashboardPageModel<AdminDashboardViewModel>
         ViewModel = new AdminDashboardViewModel
         {
             UserName = User.Identity?.Name ?? "Admin",
-            TotalUsers = (await _userService.GetAllUsersAsync()).Count(),
-            TotalDealers = (await _dealerService.GetAllDealersAsync()).Count(),
-            TotalOrders = (await _orderService.GetAllOrdersAsync()).Count(),
-            TotalVehicles = await _vehicleService.GetTotalVehiclesCountAsync(),
+            TotalUsers = await GetTotalUsersCount(),
+            TotalDealers = await GetTotalDealersCount(),
+            TotalOrders = await GetTotalOrdersCount(),
+            TotalVehicles = await GetTotalVehiclesCount(),
         };
     }
 

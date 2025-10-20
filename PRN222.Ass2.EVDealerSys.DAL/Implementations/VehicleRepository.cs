@@ -22,15 +22,6 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
                 .ThenBy(v => v.Version)
                 .ToListAsync();
         }
-        public override async Task<IEnumerable<Vehicle>> GetAllAsync()
-        {
-            return await _context.Vehicles
-                .Include(v => v.Inventories)
-                    .ThenInclude(i => i.Dealer)
-                .Include(v => v.OrderItems)
-                .OrderBy(v => v.Model)
-                .ToListAsync();
-        }
         public async Task<Vehicle?> GetByIdWithRelaAsync(int id)
         {
             return await _context.Vehicles
@@ -107,13 +98,6 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
                 .OrderBy(v => v.Model)
                 .ThenBy(v => v.Version)
                 .ToListAsync();
-        }
-
-        public override IEnumerable<Vehicle> GetAll()
-        {
-            return _context.Vehicles
-                .Include(v => v.Inventories)
-                .ToList();
         }
 
         public async Task<bool> CheckDuplicateAsync(string model, string version, string color, int? excludeId = null)

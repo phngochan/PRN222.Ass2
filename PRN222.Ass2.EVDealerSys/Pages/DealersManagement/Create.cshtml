@@ -1,0 +1,108 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.DealersManagement.CreateModel
+@{
+    ViewData["Title"] = "Thêm đại lý mới";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-building"></i> Thông tin đại lý
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-page="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="ViewModel.Name" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                <input asp-for="ViewModel.Name" class="form-control" placeholder="Nhập tên đại lý..." />
+                            </div>
+                            <span asp-validation-for="ViewModel.Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="ViewModel.Address" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                <input asp-for="ViewModel.Address" class="form-control" placeholder="Nhập địa chỉ..." />
+                            </div>
+                            <span asp-validation-for="ViewModel.Address" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="ViewModel.Region" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-map"></i></span>
+                                <input asp-for="ViewModel.Region" class="form-control" placeholder="Nhập khu vực (VD: Miền Bắc, Miền Nam...)..." />
+                            </div>
+                            <span asp-validation-for="ViewModel.Region" class="text-danger small"></span>
+                            <small class="form-text text-muted">Ví dụ: Miền Bắc, Miền Trung, Miền Nam, TP.HCM, Hà Nội...</small>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-page="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Lưu đại lý
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+<style>
+    .bg-primary {
+        background: linear-gradient(135deg, #3e5f44 0%, #5e936c 100%) !important;
+    }
+
+    .text-primary {
+        color: #3e5f44 !important;
+    }
+
+    .btn-primary {
+        background-color: #3e5f44;
+        border-color: #3e5f44;
+    }
+
+        .btn-primary:hover {
+            background-color: #2c3e2f;
+            border-color: #2c3e2f;
+        }
+
+    .input-group-text {
+        background-color: #e8ffd7;
+        border-color: #93da97;
+        color: #3e5f44;
+    }
+
+    .form-control:focus {
+        border-color: #5e936c;
+        box-shadow: 0 0 0 0.2rem rgba(62, 95, 68, 0.25);
+    }
+
+    .breadcrumb-item a {
+        color: #3e5f44;
+        text-decoration: none;
+    }
+
+        .breadcrumb-item a:hover {
+            color: #5e936c;
+        }
+</style>
+
