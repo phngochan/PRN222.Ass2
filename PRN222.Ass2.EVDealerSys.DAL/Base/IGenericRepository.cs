@@ -1,8 +1,8 @@
+using System.Linq.Expressions;
+
 namespace PRN222.Ass2.EVDealerSys.DAL.Base;
 public interface IGenericRepository<T> where T : class
 {
-    IEnumerable<T> GetAll();
-    Task<IEnumerable<T>> GetAllAsync();
     T? GetById(int id);
     Task<T?> GetByIdAsync(int id);
     void Create(T entity);
@@ -18,4 +18,6 @@ public interface IGenericRepository<T> where T : class
 
     int Save();
     Task<int> SaveAsync();
+    Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[]? includes);
+    IEnumerable<T> GetAll(params Expression<Func<T, object>>[]? includes);
 }

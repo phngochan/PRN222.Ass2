@@ -27,7 +27,7 @@
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item">
-                                <a class="nav-link ev-nav-link" href="/Dashboard">
+                                <a class="nav-link ev-nav-link" asp-page="/Dashboard/Index">
                                     <i class="fas fa-tachometer-alt"></i> Dashboard
                                 </a>
                             </li>
@@ -35,7 +35,7 @@
                             @if (User.IsInRole("1") || User.IsInRole("2"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link ev-nav-link" href="/User">
+                                    <a class="nav-link ev-nav-link" asp-page="/UsersManagement/Index">
                                         <i class="fas fa-users"></i> Quản lý User
                                     </a>
                                 </li>
@@ -46,16 +46,16 @@
                                     <i class="fas fa-cog"></i> Quản lý
                                 </a>
                                 <ul class="dropdown-menu ev-dropdown-menu">
-                                    <li><a class="dropdown-item ev-dropdown-item" href="/VehiclesManagement"><i class="fas fa-car"></i> Xe</a></li>
+                                    <li><a class="dropdown-item ev-dropdown-item" asp-page="/VehiclesManagement/Index"><i class="fas fa-car"></i> Xe</a></li>
                                     <li>
                                         <a class="dropdown-item ev-dropdown-item" asp-page="/TestDrives/Index">
                                             <i class="fas fa-calendar-alt"></i> Lịch Thử Xe
                                         </a>
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item ev-dropdown-item" href="/CustomersManagement"><i class="fas fa-users"></i> Khách hàng</a></li>
+                                    <li><a class="dropdown-item ev-dropdown-item" asp-page="/CustomerManagement/Index"><i class="fas fa-users"></i> Khách hàng</a></li>
                                     <li>
-                                        <a class="dropdown-item ev-dropdown-item" asp-page="/Order/Index">
+                                        <a class="dropdown-item ev-dropdown-item" asp-page="/Orders/Index">
                                             <i class="fas fa-shopping-cart"></i> Đơn Hàng
                                         </a>
                                     </li>
@@ -92,6 +92,7 @@
                                             </a>
                                         </li>
                                     }
+                                    <li><a class="dropdown-item ev-dropdown-item" asp-page="/DealersManagement/Index"><i class="fas fa-building"></i> Đại lý</a></li>
                                 </ul>
                             </li>
 
@@ -117,6 +118,15 @@
                                     </li>
                                 </ul>
                             </li>
+
+                            @if (User.IsInRole("1") || User.IsInRole("2"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link ev-nav-link" asp-page="/ActivityLogs/Index">
+                                        <i class="fas fa-history"></i> Activity Logs    
+                                    </a>
+                                </li>
+                            }
                         }
 
                         <li class="nav-item">
@@ -178,6 +188,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@microsoft/signalr@7.0.14/dist/browser/signalr.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

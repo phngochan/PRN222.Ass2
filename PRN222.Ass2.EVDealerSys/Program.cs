@@ -44,6 +44,8 @@ builder.Services.AddScoped<IDealerRepository, DealerRepository>();
 
 // Reports
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
+// Activity Logs
+builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 
 // ========== 4. Services ==========
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -58,6 +60,7 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IAllocationService, AllocationService>();
 
 
+builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 
 // ========== Add Authen ==========
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -103,6 +106,8 @@ app.UseAuthorization();
 app.UseMiddleware<StartPageRedirectMiddleware>();
 
 app.MapHub<OrderHub>("/orderHub");
+app.MapHub<ManagementHub>("/managementHub");
+app.MapHub<VehicleHub>("/vehicleHub");
 
 app.MapRazorPages();
 

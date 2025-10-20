@@ -1,0 +1,269 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement.DetailsModel
+@{
+    ViewData["Title"] = "Chi tiết xe";
+}
+
+<div class="container-fluid">
+    @if (TempData["Error_Vehicles_Details"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Lỗi:</strong> @TempData["Error_Vehicles_Details"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="page-header">
+                <h2><i class="fas fa-info-circle"></i> Chi tiết xe điện</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a asp-action="Index">Quản lý xe</a></li>
+                        <li class="breadcrumb-item active">Chi tiết</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-car"></i> Thông tin xe - ID: @Model.Vehicle.Id</h5>
+                    <span class="badge badge-@GetStatusBadgeClass(Model.Vehicle.Status)-large">
+                        @GetStatusText(Model.Vehicle.Status)
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <label><i class="fas fa-tag text-primary"></i> Model:</label>
+                                <p class="detail-value">@Model.Vehicle.Model</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <label><i class="fas fa-code-branch text-primary"></i> Phiên bản:</label>
+                                <p class="detail-value">@Model.Vehicle.Version</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <label><i class="fas fa-palette text-primary"></i> Màu sắc:</label>
+                                <p class="detail-value">@Model.Vehicle.Color</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <label><i class="fas fa-dollar-sign text-primary"></i> Giá:</label>
+                                <p class="detail-value text-success fw-bold">@Model.Vehicle.Price.ToString("N0") VNĐ</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-item mb-3">
+                        <label><i class="fas fa-cogs text-primary"></i> Cấu hình:</label>
+                        <p class="detail-value">@(string.IsNullOrEmpty(Model.Vehicle.Config) ? "Chưa có thông tin" : Model.Vehicle.Config)</p>
+                    </div>
+
+                    <div class="detail-item">
+                        <label><i class="fas fa-info-circle text-primary"></i> Trạng thái:</label>
+                        <p>
+                            <span class="badge bg-@GetStatusBadgeClass(Model.Vehicle.Status)">
+                                @GetStatusText(Model.Vehicle.Status)
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h6 class="mb-0"><i class="fas fa-chart-line"></i> Thống kê liên quan</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="stat-box">
+                                <i class="fas fa-warehouse fa-2x text-primary mb-2"></i>
+                                <h4 class="text-primary">@Model.Vehicle.TotalInventory</h4>
+                                <p class="text-muted">Tồn kho</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-box">
+                                <i class="fas fa-shopping-cart fa-2x text-success mb-2"></i>
+                                <h4 class="text-success">@Model.Vehicle.TotalOrders</h4>
+                                <p class="text-muted">Đơn hàng</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-box">
+                                <i class="fas fa-truck fa-2x text-info mb-2"></i>
+                                <h4 class="text-info">@Model.Vehicle.TotalAllocations</h4>
+                                <p class="text-muted">Phân bổ</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                </a>
+                <div>
+                    <a asp-action="Edit" asp-route-id="@Model.Vehicle.Id" class="btn btn-warning me-2">
+                        <i class="fas fa-edit"></i> Chỉnh sửa
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Vehicle.Id" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Xóa
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>>
+
+@functions {
+    public string GetStatusBadgeClass(int? status)
+    {
+        return status switch
+        {
+            1 => "success",
+            2 => "danger",
+            3 => "warning",
+            4 => "info",
+            _ => "secondary"
+        };
+    }
+
+    public string GetStatusText(int? status)
+    {
+        return status switch
+        {
+            1 => "Có sẵn",
+            2 => "Đã bán",
+            3 => "Đang bảo trì",
+            4 => "Đặt trước",
+            _ => "Không xác định"
+        };
+    }
+}
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #3e5f44 0%, #5e936c 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+        .page-header h2 {
+            margin-bottom: 0.5rem;
+        }
+
+    .breadcrumb {
+        background-color: rgba(255, 255, 255, 0.1);
+        margin-bottom: 0;
+    }
+
+    .breadcrumb-item a {
+        color: #e8ffd7;
+    }
+
+    .breadcrumb-item.active {
+        color: white;
+    }
+
+    .card-header.bg-primary {
+        background: linear-gradient(135deg, #3e5f44 0%, #5e936c 100%) !important;
+    }
+
+    .card-header.bg-secondary {
+        background-color: #6c757d !important;
+    }
+
+    .detail-item {
+        margin-bottom: 1rem;
+    }
+
+        .detail-item label {
+            font-weight: 600;
+            color: #3e5f44;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+    .detail-value {
+        font-size: 1.1rem;
+        color: #2c3e2f;
+        margin-bottom: 0;
+    }
+
+    .badge-success-large {
+        background-color: #6b9b76;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+
+    .badge-warning-large {
+        background-color: #5e936c;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+
+    .badge-danger-large {
+        background-color: #dc3545;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+
+    .badge-info-large {
+        background-color: #93da97;
+        color: #2c3e2f;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+
+    .stat-box {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background-color: #f8f9fa;
+    }
+
+    .text-primary {
+        color: #3e5f44 !important;
+    }
+
+    .text-success {
+        color: #6b9b76 !important;
+    }
+
+    .text-info {
+        color: #5e936c !important;
+    }
+
+    .btn-warning {
+        background-color: #5e936c;
+        border-color: #5e936c;
+        color: white;
+    }
+
+        .btn-warning:hover {
+            background-color: #4d7a59;
+            border-color: #4d7a59;
+        }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+</style>

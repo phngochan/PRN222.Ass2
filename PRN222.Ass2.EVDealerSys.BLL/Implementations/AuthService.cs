@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace PRN222.Ass2.EVDealerSys.BLL.Implementations;
 
@@ -17,11 +19,18 @@ public class AuthService(IConfiguration configuration, IUserRepository userRepo)
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
             return null;
 
-        // Hash password if needed (currently using plain text)
-        // string hashedPassword = HashPassword(password);
+        // Get user by email
+        var users = await _userRepo.GetAllAsync();
+        var user = users.FirstOrDefault(u => u.Email == email);
+        
+        if (user == null)
+            return null;
 
-        // Authenticate user
-        var user = await _userRepo.Auth(email, password);
+        // Verify password hash
+        var hashedPassword = HashPassword(password);
+        if (user.Password != hashedPassword)
+            return null;
+
         return user;
     }
 
@@ -32,10 +41,13 @@ public class AuthService(IConfiguration configuration, IUserRepository userRepo)
         // 1: Admin, 2: Manager, 3: Staff (example)
     }
 
-    // Future: Add password hashing
+    // Hash password using SHA256 (same algorithm as UserService)
     private string HashPassword(string password)
     {
-        // Implement password hashing (BCrypt, etc.)
-        return password; // Temporary
+        using (var sha256 = SHA256.Create())
+        {
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(hashedBytes);
+        }
     }
 }

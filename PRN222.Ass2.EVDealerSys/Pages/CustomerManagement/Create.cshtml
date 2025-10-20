@@ -1,0 +1,211 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.CustomerManagement.CreateModel
+@{
+    ViewData["Title"] = "Thêm Khách hàng mới";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user"></i> Thông tin khách hàng</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-page="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="ViewModel.Name" class="form-label">
+                                <i class="fas fa-user"></i> Tên khách hàng <span class="text-danger">*</span>
+                            </label>
+
+                            <input asp-for="ViewModel.Name" class="form-control" placeholder="Nhập tên khách hàng" />
+
+                            <span asp-validation-for="ViewModel.Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ViewModel.Email" class="form-label">
+                                    <i class="fas fa-envelope"></i> Email <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="ViewModel.Email" class="form-control" placeholder="VD: abc@gmail.com" />
+                                <span asp-validation-for="ViewModel.Email" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ViewModel.Phone" class="form-label">
+                                    <i class="fas fa-phone"></i> Số điện thoại <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="ViewModel.Phone" class="form-control" placeholder="VD: 0123456789" />
+                                <span asp-validation-for="ViewModel.Phone" class="text-danger"></span>
+                            </div>
+
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ViewModel.Address" class="form-label">
+                                <i class="fas fa-map-marker-alt"></i> Địa chỉ <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="ViewModel.Address" class="form-control" placeholder="Nhập địa chỉ đầy đủ" />
+                            <span asp-validation-for="ViewModel.Address" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ViewModel.DealerId" class="form-label">
+                                <i class="fas fa-info-circle"></i> Trạng thái <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="ViewModel.DealerId" class="form-control">
+                                <option value="">-- Chọn đại lý --</option>
+                                @if (Model.ViewModel.AvailableDealers != null)
+                                {
+                                    @foreach (var dealer in Model.ViewModel.AvailableDealers)
+                                    {
+                                        <option value="@dealer.Id">@dealer.Name - @dealer.Region</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="ViewModel.DealerId" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-page="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Lưu xe mới
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/managementHub.js"></script>
+    <script>
+        if (window.managementHub && window.managementHub.connection) {
+            window.managementHub.connection.on("ReceiveDealerCreated", function (dealerData) {
+                // Thêm dealer mới vào array
+                if (!window.availableDealers) window.availableDealers = [];
+                window.availableDealers.push({
+                    id: dealerData.id,
+                    name: dealerData.name,
+                    region: dealerData.region
+                });
+                // Cập nhật dropdown
+                updateDealerDropdown();
+            });
+        }
+
+        function updateDealerDropdown() {
+            var select = document.querySelector('select[name="ViewModel.DealerId"]');
+            if (!select) return;
+            // Xóa hết option cũ (trừ option đầu tiên)
+            select.options.length = 1;
+            // Thêm lại option mới
+            window.availableDealers.forEach(function (dealer) {
+                var opt = document.createElement('option');
+                opt.value = dealer.id;
+                opt.text = dealer.name + ' - ' + dealer.region;
+                select.appendChild(opt);
+            });
+        }
+    </script>
+
+    @* Render JS array từ danh sách đại lý *@
+    <script>
+        window.availableDealers = [
+            @foreach (var dealer in Model.ViewModel.AvailableDealers ?? [])
+            {
+                <text>
+                { id: @dealer.Id, name: "@dealer.Name", region: "@dealer.Region" },
+                </text>
+            }
+        ];
+    </script>
+}
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #3e5f44 0%, #5e936c 100%);
+    }
+
+    .btn-primary {
+        background-color: #3e5f44;
+        border-color: #3e5f44;
+    }
+
+        .btn-primary:hover {
+            background-color: #2c3e2f;
+            border-color: #2c3e2f;
+        }
+
+    .input-group-text {
+        background-color: #e8ffd7;
+        border-color: #93da97;
+        color: #3e5f44;
+    }
+
+    .form-control:focus {
+        border-color: #5e936c;
+        box-shadow: 0 0 0 0.2rem rgba(62, 95, 68, 0.25);
+    }
+
+    .card-header.bg-primary {
+        background: linear-gradient(135deg, #3e5f44 0%, #5e936c 100%) !important;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #3e5f44;
+    }
+
+    .form-control:focus {
+        border-color: #5e936c;
+        box-shadow: 0 0 0 0.2rem rgba(94, 147, 108, 0.25);
+    }
+
+    .btn-success {
+        background-color: #6b9b76;
+        border-color: #6b9b76;
+    }
+
+        .btn-success:hover {
+            background-color: #5e936c;
+            border-color: #5e936c;
+        }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .custom-select {
+        background-color: white;
+        border: 1px solid #ced4da;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+        padding-right: 2.5rem;
+    }
+
+        .custom-select option {
+            background-color: white;
+            color: #333;
+            padding: 8px 12px;
+        }
+
+            .custom-select option:hover {
+                background-color: #e8ffd7;
+            }
+</style>
+

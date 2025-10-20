@@ -22,15 +22,6 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Implementations
                 .FirstOrDefaultAsync(u => u.Email == email && u.Password == pass);
         }
 
-        // Get all users
-        public override async Task<IEnumerable<User>> GetAllAsync()
-        {
-            return await _context.Users
-                .Include(u => u.Dealer)
-                .OrderBy(u => u.Name)
-                .ToListAsync();
-        }
-
         // Get user by ID
         public override async Task<User?> GetByIdAsync(int id)
         {

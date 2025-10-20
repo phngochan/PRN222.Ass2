@@ -47,6 +47,9 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
@@ -469,7 +472,7 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Migrations
                     b.HasOne("PRN222.Ass2.EVDealerSys.BusinessObjects.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("User");
                 });

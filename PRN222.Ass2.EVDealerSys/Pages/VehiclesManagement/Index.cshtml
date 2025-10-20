@@ -1,0 +1,473 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement.IndexModel
+@{
+    ViewData["Title"] = "Quản lý Xe điện";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-2 text-gray-800">
+                <i class="fas fa-car-battery"></i> Quản lý Xe điện
+            </h1>
+            <p class="text-muted mb-0">Quản lý danh sách phương tiện điện trong hệ thống</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Thêm xe mới
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Tổng số xe
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ViewModel.TotalVehicles</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-car fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Xe có sẵn
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ViewModel.AvailableVehicles</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Đang bảo trì
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ViewModel.MaintenanceVehicles</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tools fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Đã bán
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.ViewModel.SoldVehicles</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-handshake fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary text-white">
+            <h6 class="m-0 font-weight-bold">
+                <i class="fas fa-filter"></i> Tìm kiếm & Lọc
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="get" asp-action="Index">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="searchModel" class="form-label">Model</label>
+                        <input type="text" class="form-control" id="searchModel" name="searchModel"
+                               placeholder="Tìm theo model..." value="@Model.ViewModel.SearchModel">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="searchVersion" class="form-label">Phiên bản</label>
+                        <input type="text" class="form-control" id="searchVersion" name="searchVersion"
+                               placeholder="Tìm theo version..." value="@Model.ViewModel.SearchVersion">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="filterStatus" class="form-label">Trạng thái</label>
+                        <select class="form-control" id="filterStatus" name="filterStatus">
+                            <option value="">Tất cả</option>
+                            <option value="1" selected="@(Model.ViewModel.FilterStatus == 1)">Có sẵn</option>
+                            <option value="2" selected="@(Model.ViewModel.FilterStatus == 2)">Đã bán</option>
+                            <option value="3" selected="@(Model.ViewModel.FilterStatus == 3)">Bảo trì</option>
+                            <option value="4" selected="@(Model.ViewModel.FilterStatus == 4)">Đặt trước</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="filterColor" class="form-label">Màu sắc</label>
+                        <input type="text" class="form-control" id="filterColor" name="filterColor"
+                               placeholder="Màu..." value="@Model.ViewModel.FilterColor">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label d-block">&nbsp;</label>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Vehicles Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-list"></i> Danh sách xe điện
+            </h6>
+            @* <div>
+            <button class="btn btn-sm btn-success" onclick="exportToExcel()">
+            <i class="fas fa-file-excel"></i> Xuất Excel
+            </button>
+            </div> *@
+        </div>
+        <div class="card-body">
+            @if (Model.ViewModel.Vehicles.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="vehiclesTable">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Model</th>
+                                <th>Phiên bản</th>
+                                <th>Màu sắc</th>
+                                <th>Cấu hình</th>
+                                <th>Giá (VNĐ)</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var vehicle in Model.ViewModel.Vehicles)
+                            {
+                                <tr>
+                                    <td class="font-weight-bold">#@vehicle.Id</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-charging-station text-success mr-2"></i>
+                                            <strong>@vehicle.Model</strong>
+                                        </div>
+                                    </td>
+                                    <td>@vehicle.Version</td>
+                                    <td>
+                                        <span class="badge badge-pill @(vehicle.Color?.ToLower() == "trắng" || vehicle.Color?.ToLower() == "white" ? "badge-white" : "")"
+                                              style="background-color: @GetColorCode(vehicle.Color); color: @(vehicle.Color?.ToLower() == "trắng" || vehicle.Color?.ToLower() == "white" ? "#333" : "white"); @(vehicle.Color?.ToLower() == "trắng" || vehicle.Color?.ToLower() == "white" ? "border: 1px solid #ddd;" : "")">
+                                            @vehicle.Color
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">@vehicle.Config</small>
+                                    </td>
+                                    <td class="text-right font-weight-bold text-success">
+                                        @vehicle.Price?.ToString("N0")
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-@GetStatusBadgeClass(vehicle.Status)">
+                                            @GetStatusText(vehicle.Status)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@vehicle.Id"
+                                               class="btn btn-sm btn-info" title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@vehicle.Id"
+                                               class="btn btn-sm btn-warning" title="Chỉnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@vehicle.Id"
+                                               class="btn btn-sm btn-danger" title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.ViewModel.TotalPages > 1)
+                {
+                    <nav aria-label="Vehicle pagination">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(Model.ViewModel.CurrentPage == 1 ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(Model.ViewModel.CurrentPage - 1)">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            @for (int i = 1; i <= Model.ViewModel.TotalPages; i++)
+                            {
+                                <li class="page-item @(Model.ViewModel.CurrentPage == i ? "active" : "")">
+                                    <a class="page-link" asp-action="Index" asp-route-page="@i">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(Model.ViewModel.CurrentPage == Model.ViewModel.TotalPages ? "disabled" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-page="@(Model.ViewModel.CurrentPage + 1)">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-car-side fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">Không tìm thấy xe nào</h5>
+                    <p class="text-muted">Thử thay đổi bộ lọc hoặc thêm xe mới vào hệ thống</p>
+                    <a asp-action="Create" class="btn btn-primary mt-3">
+                        <i class="fas fa-plus"></i> Thêm xe mới
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    public string GetStatusBadgeClass(int? status)
+    {
+        return status switch
+        {
+            1 => "success",
+            2 => "danger",
+            3 => "warning",
+            4 => "info",
+            _ => "secondary"
+        };
+    }
+
+    public string GetStatusText(int? status)
+    {
+        return status switch
+        {
+            1 => "Có sẵn",
+            2 => "Đã bán",
+            3 => "Bảo trì",
+            4 => "Đặt trước",
+            _ => "Không xác định"
+        };
+    }
+
+    public string GetColorCode(string? color)
+    {
+        return color?.ToLower() switch
+        {
+            "đen" or "black" => "#000000",
+            "trắng" or "white" => "#FFFFFF",
+            "đỏ" or "red" => "#DC3545",
+            "xanh" or "blue" => "#007BFF",
+            "xám" or "gray" => "#6C757D",
+            "bạc" or "silver" => "#C0C0C0",
+            _ => "#3E5F44"
+        };
+    }
+}
+<script>
+    $(document).ready(function () {
+        // Auto dismiss alerts after 8 seconds
+        setTimeout(function () {
+            $('.alert').fadeOut();
+        }, 8000);
+
+        // Clear messages when user starts typing
+        $('input, select, textarea').on('input change', function () {
+            $('.alert').fadeOut();
+        });
+    });
+
+    function exportToExcel() {
+        // Implement Excel export functionality
+        alert('Chức năng xuất Excel đang được phát triển');
+    }
+
+    // Initialize tooltips
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script src="~/js/vehicleHub.js"></script>
+}
+
+<style>
+    /* Green Palette: #3E5F44, #5E936C, #93DA97, #E8FFD7 */
+
+    .bg-primary {
+        background: linear-gradient(135deg, #3e5f44 0%, #5e936c 100%) !important;
+    }
+
+    .text-primary {
+        color: #3e5f44 !important;
+    }
+
+    .text-success {
+        color: #6b9b76 !important;
+    }
+
+    .text-info {
+        color: #5e936c !important;
+    }
+
+    .text-warning {
+        color: #93da97 !important;
+    }
+
+    .text-gray-300 {
+        color: #c5d9c9 !important;
+    }
+
+    .text-gray-800 {
+        color: #2c3e2f !important;
+    }
+
+    .border-left-primary {
+        border-left: 0.25rem solid #3e5f44 !important;
+    }
+
+    .border-left-success {
+        border-left: 0.25rem solid #6b9b76 !important;
+    }
+
+    .border-left-info {
+        border-left: 0.25rem solid #93da97 !important;
+    }
+
+    .border-left-warning {
+        border-left: 0.25rem solid #5e936c !important;
+    }
+
+    .badge-white {
+        background-color: #ffffff !important;
+        color: #333 !important;
+        border: 1px solid #ddd !important;
+    }
+
+    .card {
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(62, 95, 68, 0.15) !important;
+        border: none;
+    }
+
+    .btn-primary {
+        background-color: #3e5f44;
+        border-color: #3e5f44;
+    }
+
+        .btn-primary:hover {
+            background-color: #2c3e2f;
+            border-color: #2c3e2f;
+        }
+
+    .btn-success {
+        background-color: #6b9b76;
+        border-color: #6b9b76;
+    }
+
+        .btn-success:hover {
+            background-color: #5e936c;
+            border-color: #5e936c;
+        }
+
+    .btn-info {
+        background-color: #93da97;
+        border-color: #93da97;
+        color: #2c3e2f;
+    }
+
+        .btn-info:hover {
+            background-color: #7ec883;
+            border-color: #7ec883;
+        }
+
+    .btn-warning {
+        background-color: #5e936c;
+        border-color: #5e936c;
+        color: white;
+    }
+
+        .btn-warning:hover {
+            background-color: #4d7a59;
+            border-color: #4d7a59;
+        }
+
+    .badge-success {
+        background-color: #6b9b76;
+    }
+
+    .badge-info {
+        background-color: #93da97;
+        color: #2c3e2f;
+    }
+
+    .badge-danger {
+        background-color: #dc3545;
+    }
+
+    .badge-warning {
+        background-color: #ffc107;
+    }
+
+    .thead-light {
+        background-color: #e8ffd7;
+        color: #2c3e2f;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f5fff0;
+    }
+
+    .page-item.active .page-link {
+        background-color: #3e5f44;
+        border-color: #3e5f44;
+    }
+
+    .page-link {
+        color: #3e5f44;
+    }
+
+        .page-link:hover {
+            color: #2c3e2f;
+            background-color: #e8ffd7;
+            border-color: #93da97;
+        }
+
+    .form-control:focus {
+        border-color: #93da97;
+        box-shadow: 0 0 0 0.2rem rgba(147, 218, 151, 0.25);
+    }
+</style>

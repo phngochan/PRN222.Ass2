@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 using Microsoft.EntityFrameworkCore;
 
 using PRN222.Ass2.EVDealerSys.DAL.Context;
@@ -8,8 +10,36 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     protected readonly EvdealerDbContext _context;
     public GenericRepository(EvdealerDbContext context) => _context = context;
 
-    public virtual IEnumerable<T> GetAll() => _context.Set<T>().AsNoTracking().ToList();
-    public virtual async Task<IEnumerable<T>> GetAllAsync() => await _context.Set<T>().AsNoTracking().ToListAsync();
+    public virtual IEnumerable<T> GetAll(params Expression<Func<T, object>>[]? includes)
+    {
+        IQueryable<T> query = _context.Set<T>();
+
+        // Apply includes
+        if (includes != null)
+        {
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+        }
+        return query.AsNoTracking().ToList();
+    }
+
+    public virtual async Task<IEnumerable<T>> GetAllAsync(params Expression<Func<T, object>>[]? includes)
+    {
+        IQueryable<T> query = _context.Set<T>();
+
+        // Apply includes
+        if (includes != null)
+        {
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+        }
+        return await query.AsNoTracking().ToListAsync();
+    }
+
     public virtual T? GetById(int id)
     {
         var entity = _context.Set<T>().Find(id);
