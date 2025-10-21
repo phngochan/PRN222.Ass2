@@ -53,8 +53,8 @@
                             <option value="2" selected="@(Model.FilterStatus == 2)">Đã xác nhận</option>
                             <option value="3" selected="@(Model.FilterStatus == 3)">Hoàn thành</option>
                             <option value="4" selected="@(Model.FilterStatus == 4)">Đã hủy</option>
-                            <option value="5" selected="@(Model.FilterStatus == 5)">KhA�ch hA�ng h��?y</option>
-                            <option value="6" selected="@(Model.FilterStatus == 6)">KhA�ng �`A�n</option>
+                            <option value="5" selected="@(Model.FilterStatus == 5)">Khách hàng hủy</option>
+                            <option value="6" selected="@(Model.FilterStatus == 6)">Khách hàng không đến</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -188,14 +188,21 @@
 
                                             @if (item.Status == 2)
                                             {
-                                                <form method="post" asp-page-handler="UpdateStatus" class="d-inline">
-                                                    <input type="hidden" name="id" value="@item.Id" />
-                                                    <input type="hidden" name="status" value="6" />
-                                                    <button type="submit" class="btn btn-outline-dark"
-                                                            title="Không xác nhận" onclick="return confirm('Xác nhận không xác nhận khách hàng?')">
-                                                        <i class="fas fa-user-clock"></i>
-                                                    </button>
-                                                </form>
+                                                @* Chỉ cho phép đánh dấu "Không đến" sau khi qua giờ thử xe *@
+                                                var testDriveDateTime = item.ScheduledDate.Date.Add(item.EndTime);
+                                                var canMarkNoShow = DateTime.Now > testDriveDateTime;
+                                                
+                                                if (canMarkNoShow)
+                                                {
+                                                    <form method="post" asp-page-handler="UpdateStatus" class="d-inline">
+                                                        <input type="hidden" name="id" value="@item.Id" />
+                                                        <input type="hidden" name="status" value="6" />
+                                                        <button type="submit" class="btn btn-outline-dark"
+                                                                title="Khách hàng không đến" onclick="return confirm('Xác nhận khách hàng không đến?')">
+                                                            <i class="fas fa-user-clock"></i>
+                                                        </button>
+                                                    </form>
+                                                }
                                             }
 
                                             @if (item.Status == 1 || item.Status == 2)

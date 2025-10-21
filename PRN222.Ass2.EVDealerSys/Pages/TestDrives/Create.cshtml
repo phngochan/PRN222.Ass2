@@ -43,10 +43,16 @@
             const customerPhoneInput = $('#Form_CustomerPhone');
             const customerEmailInput = $('#Form_CustomerEmail');
 
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const minDate = tomorrow.toISOString().split('T')[0];
+            // Cho phép chọn từ hôm nay trở đi
+            const today = new Date();
+            const minDate = today.toISOString().split('T')[0];
             $('#scheduledDate').attr('min', minDate);
+
+            // Set giờ làm việc min/max (8:00 - 18:00)
+            $('#startTime').attr('min', '08:00');
+            $('#startTime').attr('max', '18:00');
+            $('#endTime').attr('min', '08:00');
+            $('#endTime').attr('max', '18:00');
 
             if (!$('#startTime').val()) {
                 $('#startTime').val('09:00');
@@ -54,6 +60,27 @@
             if (!$('#endTime').val()) {
                 $('#endTime').val('10:00');
             }
+
+            // Validate thời gian khi thay đổi
+            $('#startTime, #endTime').on('change', function() {
+                const startTime = $('#startTime').val();
+                const endTime = $('#endTime').val();
+                
+                if (startTime && endTime) {
+                    const start = new Date('2000-01-01 ' + startTime);
+                    const end = new Date('2000-01-01 ' + endTime);
+                    const diffMinutes = (end - start) / 1000 / 60;
+                    const diffHours = diffMinutes / 60;
+                    
+                    if (diffMinutes < 30) {
+                        alert('Thời gian thử xe tối thiểu là 30 phút');
+                        $('#endTime').val('');
+                    } else if (diffHours > 2) {
+                        alert('Thời gian thử xe tối đa là 2 giờ');
+                        $('#endTime').val('');
+                    }
+                }
+            });
 
             $('input[name="customerMode"]').change(function () {
                 const mode = $(this).val();
@@ -617,8 +644,9 @@
                             <strong>Lưu ý:</strong>
                             <ul class="mb-0 mt-2">
                                 <li>Tất cả các trường có dấu <span class="text-danger">*</span> là bắt buộc</li>
-                                <li>Ngày thử xe phải từ ngày mai trở đi</li>
-                                <li>Thời gian thử xe tối thiểu là 30 phút</li>
+                                <li>Có thể đặt lịch từ hôm nay, giờ bắt đầu phải sau giờ hiện tại</li>
+                                <li>Giờ làm việc: 8:00 - 18:00</li>
+                                <li>Thời gian thử xe: tối thiểu 30 phút, tối đa 2 giờ</li>
                                 <li>Hệ thống sẽ kiểm tra tính khả dụng của xe trong khung giờ bạn chọn</li>
                                 <li>Khách hàng sẽ nhận thông báo xác nhận qua email</li>
                             </ul>

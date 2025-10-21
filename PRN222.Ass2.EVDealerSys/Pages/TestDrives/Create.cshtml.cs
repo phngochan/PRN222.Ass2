@@ -70,9 +70,34 @@ public class CreateModel : PageModel
             return Page();
         }
 
-        if (Form.ScheduledDate.Date <= DateTime.Today)
+        // Kiểm tra thời gian tối đa (2 giờ)
+        if ((Form.EndTime - Form.StartTime).TotalHours > 2)
         {
-            ModelState.AddModelError(nameof(Form.ScheduledDate), "Ngày thử xe phải từ ngày mai trở đi.");
+            ModelState.AddModelError(nameof(Form.EndTime), "Thời gian thử xe tối đa là 2 giờ.");
+            return Page();
+        }
+
+        // Kiểm tra giờ làm việc (8:00 - 18:00)
+        var workingHoursStart = new TimeSpan(8, 0, 0);
+        var workingHoursEnd = new TimeSpan(18, 0, 0);
+
+        if (Form.StartTime < workingHoursStart || Form.EndTime > workingHoursEnd)
+        {
+            ModelState.AddModelError(nameof(Form.StartTime), "Lịch thử xe chỉ có thể đặt trong giờ làm việc (8:00 - 18:00).");
+            return Page();
+        }
+
+        // Kiểm tra ngày không được là quá khứ
+        if (Form.ScheduledDate.Date < DateTime.Today)
+        {
+            ModelState.AddModelError(nameof(Form.ScheduledDate), "Ngày thử xe không được là ngày trong quá khứ.");
+            return Page();
+        }
+
+        // Nếu đặt lịch hôm nay, kiểm tra giờ phải sau giờ hiện tại
+        if (Form.ScheduledDate.Date == DateTime.Today && Form.StartTime <= DateTime.Now.TimeOfDay)
+        {
+            ModelState.AddModelError(nameof(Form.StartTime), "Giờ bắt đầu phải sau giờ hiện tại.");
             return Page();
         }
 
@@ -101,7 +126,7 @@ public class CreateModel : PageModel
             Notes = string.IsNullOrWhiteSpace(Form.Notes) ? null : Form.Notes.Trim(),
             DealerId = dealerId,
             UserId = userId,
-            Status = Form.Status == 0 ? 1 : Form.Status
+            Status = Form.Status == 0 ? 2 : Form.Status // Default to Confirmed (2)
         };
 
         try
@@ -261,12 +286,28 @@ public class CreateModel : PageModel
 
         if (Form.StartTime == default)
         {
-            Form.StartTime = new TimeSpan(9, 0, 0);
+            // Nếu đặt lịch cho hôm nay, set giờ ít nhất 1 tiếng sau giờ hiện tại
+            if (Form.ScheduledDate.Date == DateTime.Today)
+            {
+                var nextHour = DateTime.Now.AddHours(1);
+                Form.StartTime = new TimeSpan(nextHour.Hour, 0, 0);
+                
+                // Đảm bảo không vượt quá giờ làm việc
+                if (Form.StartTime.Hours >= 18)
+                {
+                    Form.ScheduledDate = DateTime.Today.AddDays(1);
+                    Form.StartTime = new TimeSpan(9, 0, 0);
+                }
+            }
+            else
+            {
+                Form.StartTime = new TimeSpan(9, 0, 0);
+            }
         }
 
         if (Form.EndTime == default)
         {
-            Form.EndTime = new TimeSpan(10, 0, 0);
+            Form.EndTime = Form.StartTime.Add(new TimeSpan(1, 0, 0)); // Default 1 giờ
         }
     }
 
