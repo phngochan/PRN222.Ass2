@@ -60,11 +60,18 @@ public class EditModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(int id)
     {
+        // Debug logging
+        _logger.LogInformation("Edit OnPostAsync called with id={Id}, Form.Id={FormId}", id, Form.Id);
+        _logger.LogInformation("Form values: VehicleId={VehicleId}, CustomerId={CustomerId}, ScheduledDate={ScheduledDate}, Status={Status}", 
+            Form.VehicleId, Form.CustomerId, Form.ScheduledDate, Form.Status);
+
         await LoadVehiclesAsync();
         LoadStatusOptions();
 
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("ModelState is invalid. Errors: {Errors}", 
+                string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             return Page();
         }
 
@@ -79,6 +86,46 @@ public class EditModel : PageModel
             ModelState.AddModelError(nameof(Form.EndTime), "Giờ kết thúc phải sau giờ bắt đầu.");
             return Page();
         }
+
+        if ((Form.EndTime - Form.StartTime).TotalMinutes < 30)
+        {
+            ModelState.AddModelError(nameof(Form.EndTime), "Thời gian thử xe tối thiểu là 30 phút.");
+            return Page();
+        }
+
+        // Kiểm tra thời gian tối đa (2 giờ)
+        if ((Form.EndTime - Form.StartTime).TotalHours > 2)
+        {
+            ModelState.AddModelError(nameof(Form.EndTime), "Thời gian thử xe tối đa là 2 giờ.");
+            return Page();
+        }
+
+        // Kiểm tra giờ làm việc (8:00 - 18:00)
+        var workingHoursStart = new TimeSpan(8, 0, 0);
+        var workingHoursEnd = new TimeSpan(18, 0, 0);
+
+        if (Form.StartTime < workingHoursStart || Form.EndTime > workingHoursEnd)
+        {
+            ModelState.AddModelError(nameof(Form.StartTime), "Lịch thử xe chỉ có thể đặt trong giờ làm việc (8:00 - 18:00).");
+            return Page();
+        }
+
+        // Kiểm tra ngày không được là quá khứ
+        if (Form.ScheduledDate.Date < DateTime.Today)
+        {
+            ModelState.AddModelError(nameof(Form.ScheduledDate), "Ngày thử xe không được là ngày trong quá khứ.");
+            return Page();
+        }
+
+        // Nếu sửa lịch hôm nay, kiểm tra giờ phải sau giờ hiện tại
+        if (Form.ScheduledDate.Date == DateTime.Today && Form.StartTime <= DateTime.Now.TimeOfDay)
+        {
+            ModelState.AddModelError(nameof(Form.StartTime), "Giờ bắt đầu phải sau giờ hiện tại.");
+            return Page();
+        }
+
+        // Skip time slot availability check for Edit - allow overlapping bookings
+        // User requested to not validate vehicle availability when editing
 
         var dto = new TestDriveDto
         {
@@ -97,9 +144,13 @@ public class EditModel : PageModel
             Status = Form.Status
         };
 
+        _logger.LogInformation("DTO created: Id={Id}, VehicleId={VehicleId}, CustomerId={CustomerId}, StartTime={StartTime}, EndTime={EndTime}, Status={Status}", 
+            dto.Id, dto.VehicleId, dto.CustomerId, dto.StartTime, dto.EndTime, dto.Status);
+
         try
         {
-            await _testDriveService.UpdateAsync(dto);
+            var result = await _testDriveService.UpdateAsync(dto);
+            _logger.LogInformation("UpdateAsync completed. Result: {ResultId}", result?.Id);
             TempData["SuccessMessage"] = "Cập nhật lịch thử xe thành công.";
             return RedirectToPage("./Index");
         }

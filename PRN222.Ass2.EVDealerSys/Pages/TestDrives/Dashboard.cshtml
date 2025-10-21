@@ -48,15 +48,15 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Chờ xác nhận
+                                Đã xác nhận
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">@dashboard.PendingTestDrives</div>
                             <div class="small text-warning">
-                                <i class="fas fa-clock"></i> Cần xử lý
+                                <i class="fas fa-check-circle"></i> Sẵn sàng
                             </div>
                         </div>
                         <div class="col-auto">
-                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
                         </div>
                     </div>
                 </div>
@@ -241,8 +241,8 @@
                         <a asp-page="./Create" class="btn btn-primary">
                             <i class="fas fa-plus"></i> Đặt lịch thử xe
                         </a>
-                        <a asp-page="./Index" asp-route-filterStatus="1" class="btn btn-warning">
-                            <i class="fas fa-clock"></i> Lịch chờ xác nhận
+                        <a asp-page="./Index" asp-route-filterStatus="2" class="btn btn-warning">
+                            <i class="fas fa-check-circle"></i> Lịch đã xác nhận
                         </a>
                         <a asp-page="./Index" asp-route-filterDate="@DateTime.Today.ToString("yyyy-MM-dd")" class="btn btn-info">
                             <i class="fas fa-calendar-day"></i> Lịch hôm nay
