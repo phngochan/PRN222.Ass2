@@ -1,33 +1,43 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models.Dashboard;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.Dashboard;
 
 [Authorize(Roles = "1")]
-public class AdminModel : BaseViewOnlyPageModel<AdminDashboardViewModel>
+public class AdminModel : BaseCrudPageModel
 {
     private readonly IUserService _userService;
     private readonly IDealerService _dealerService;
     private readonly IOrderService _orderService;
     private readonly IVehicleService _vehicleService;
 
+    public AdminDashboardViewModel ViewModel { get; set; } = new();
+
     public AdminModel(
+        IActivityLogService logService,
         IUserService userService,
         IDealerService dealerService,
         IOrderService orderService,
-        IVehicleService vehicleService)
+        IVehicleService vehicleService,
+        IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
     {
         _userService = userService;
         _dealerService = dealerService;
         _orderService = orderService;
         _vehicleService = vehicleService;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
-    public override async Task OnGetAsync()
+    public async Task OnGetAsync()
     {
+        var systemStats = await GetSystemStats();
+        var recentUsers = await GetRecentUsers();
+
         ViewModel = new AdminDashboardViewModel
         {
             UserName = User.Identity?.Name ?? "Admin",
@@ -35,7 +45,11 @@ public class AdminModel : BaseViewOnlyPageModel<AdminDashboardViewModel>
             TotalDealers = await GetTotalDealersCount(),
             TotalOrders = await GetTotalOrdersCount(),
             TotalVehicles = await GetTotalVehiclesCount(),
+            SystemStats = systemStats,
+            RecentUsers = recentUsers
         };
+
+        await LogAsync("View Admin Dashboard", "Admin accessed dashboard");
     }
 
     // ========================== PRIVATE HELPERS ==========================
