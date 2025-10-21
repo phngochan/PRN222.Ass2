@@ -15,10 +15,11 @@ public class DeleteModel : BaseCrudPageModel
     private readonly IDealerService _dealerService;
     private readonly IHubContext<ManagementHub> _hubContext;
 
-    public DeleteModel(IActivityLogService logService, IDealerService dealerService, IHubContext<ManagementHub> hubContext) : base(logService)
+    public DeleteModel(IActivityLogService logService, IDealerService dealerService, IHubContext<ManagementHub> hubContext, IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
     {
         _dealerService = dealerService;
         _hubContext = hubContext;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     [BindProperty]

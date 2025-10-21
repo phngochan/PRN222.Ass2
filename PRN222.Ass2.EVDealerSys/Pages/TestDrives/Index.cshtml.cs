@@ -71,7 +71,9 @@ public class IndexModel : PageModel
             }
             else
             {
-                TempData["ErrorMessage"] = "Không thể cập nhật trạng thái. Kiểm tra xem trạng thái chuyển đổi có hợp lệ không.";
+                TempData["ErrorMessage"] = status == 6 
+                    ? "Không thể đánh dấu 'Không đến'. Chỉ có thể đánh dấu sau khi qua giờ thử xe và khi trạng thái là 'Đã xác nhận'."
+                    : "Không thể cập nhật trạng thái. Kiểm tra xem trạng thái chuyển đổi có hợp lệ không.";
             }
         }
         catch (Exception ex)

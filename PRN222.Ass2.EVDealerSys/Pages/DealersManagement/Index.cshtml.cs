@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.Helpers;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.DealersManagement;
@@ -13,9 +15,10 @@ public class IndexModel : BaseCrudPageModel
 {
     private readonly IDealerService _dealerService;
 
-    public IndexModel(IActivityLogService activityLogService, IDealerService dealerService) : base(activityLogService)
+    public IndexModel(IActivityLogService activityLogService, IDealerService dealerService, IHubContext<ActivityLogHub> activityLogHubContext) : base(activityLogService)
     {
         _dealerService = dealerService;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     public DealerManagementViewModel ViewModel { get; set; } = new();

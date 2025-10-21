@@ -3,11 +3,16 @@ using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
 
 namespace PRN222.Ass2.EVDealerSys.BLL.Implementations;
-public class ActivityLogService(IActivityLogRepository activityLogRepository) : IActivityLogService
+public class ActivityLogService : IActivityLogService
 {
-    private readonly IActivityLogRepository _activityLogRepository = activityLogRepository;
+    private readonly IActivityLogRepository _activityLogRepository;
 
-    public async Task LogAsync(int? userId, string? userName, string action, string? description = null)
+    public ActivityLogService(IActivityLogRepository activityLogRepository)
+    {
+        _activityLogRepository = activityLogRepository;
+    }
+
+    public async Task<ActivityLog> LogAsync(int? userId, string? userName, string action, string? description = null)
     {
         var log = new ActivityLog
         {
@@ -19,6 +24,7 @@ public class ActivityLogService(IActivityLogRepository activityLogRepository) : 
 
         _activityLogRepository.Create(log);
         await _activityLogRepository.SaveAsync();
+        return log;
     }
 
     public async Task<IEnumerable<ActivityLog>> GetAllLogsAsync()

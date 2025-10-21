@@ -105,7 +105,7 @@ namespace PRN222.Ass2.EVDealerSys.Pages.Orders
         {
             try
             {
-                _orderService.EditOrder(OrderId, VehicleId, Quantity); 
+                _orderService.EditOrder(OrderId, VehicleId, Quantity);
                 TempData["Message"] = "Cập nhật đơn hàng thành công!";
 
                 var updatedOrder = _orderService.GetOrdersByDealer(1).FirstOrDefault(o => o.Id == OrderId);

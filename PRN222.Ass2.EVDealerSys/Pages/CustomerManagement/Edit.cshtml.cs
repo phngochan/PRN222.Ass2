@@ -17,11 +17,12 @@ namespace PRN222.Ass2.EVDealerSys.Pages.CustomerManagement
         private readonly IDealerService _dealerService;
         private readonly IHubContext<ManagementHub> _hubContext;
 
-        public EditModel(IActivityLogService logService, ICustomerService customerService, IDealerService dealerService, IHubContext<ManagementHub> hubContext) : base(logService)
+        public EditModel(IActivityLogService logService, ICustomerService customerService, IDealerService dealerService, IHubContext<ManagementHub> hubContext, IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
         {
             _customerService = customerService;
             _dealerService = dealerService;
             _hubContext = hubContext;
+            SetActivityLogHubContext(activityLogHubContext);
         }
 
         [BindProperty]

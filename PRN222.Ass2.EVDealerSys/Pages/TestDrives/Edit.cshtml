@@ -33,6 +33,9 @@
 
                         <input type="hidden" asp-for="Form.Id" />
                         <input type="hidden" asp-for="Form.CustomerId" />
+                        <input type="hidden" asp-for="Form.CustomerName" />
+                        <input type="hidden" asp-for="Form.CustomerPhone" />
+                        <input type="hidden" asp-for="Form.CustomerEmail" />
                         <input type="hidden" asp-for="Form.DealerId" />
                         <input type="hidden" asp-for="Form.UserId" />
 
@@ -139,4 +142,25 @@
 
 @section Scripts {
     @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    
+    <script>
+        // Debug form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const formData = new FormData(this);
+            console.log('=== FORM SUBMISSION DEBUG ===');
+            console.log('Form.Id:', formData.get('Form.Id'));
+            console.log('Form.VehicleId:', formData.get('Form.VehicleId'));
+            console.log('Form.CustomerId:', formData.get('Form.CustomerId'));
+            console.log('Form.ScheduledDate:', formData.get('Form.ScheduledDate'));
+            console.log('Form.StartTime:', formData.get('Form.StartTime'));
+            console.log('Form.EndTime:', formData.get('Form.EndTime'));
+            console.log('Form.Status:', formData.get('Form.Status'));
+            console.log('Form.DealerId:', formData.get('Form.DealerId'));
+            console.log('Form.UserId:', formData.get('Form.UserId'));
+            console.log('Form.CustomerName:', formData.get('Form.CustomerName'));
+            console.log('Form.CustomerPhone:', formData.get('Form.CustomerPhone'));
+            console.log('Form.CustomerEmail:', formData.get('Form.CustomerEmail'));
+            console.log('===========================');
+        });
+    </script>
 }

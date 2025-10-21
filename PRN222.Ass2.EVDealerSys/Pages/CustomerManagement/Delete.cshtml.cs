@@ -15,10 +15,11 @@ namespace PRN222.Ass2.EVDealerSys.Pages.CustomerManagement
         private readonly ICustomerService _customerService;
         private readonly IHubContext<ManagementHub> _hubContext;
 
-        public DeleteModel(IActivityLogService logService, ICustomerService customerService, IHubContext<ManagementHub> hubContext) : base(logService)
+        public DeleteModel(IActivityLogService logService, ICustomerService customerService, IHubContext<ManagementHub> hubContext, IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
         {
             _customerService = customerService;
             _hubContext = hubContext;
+            SetActivityLogHubContext(activityLogHubContext);
         }
 
         public DeleteCustomerViewModel ViewModel { get; set; } = new();

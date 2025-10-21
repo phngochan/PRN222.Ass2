@@ -12,12 +12,10 @@ namespace PRN222.Ass2.EVDealerSys.Pages.ActivityLogs
     public class IndexModel : PageModel
     {
         private readonly IActivityLogService _activityLogService;
-        private readonly IUserService _userService;
 
         public IndexModel(IActivityLogService activityLogService, IUserService userService)
         {
             _activityLogService = activityLogService;
-            _userService = userService;
         }
 
         public List<ActivityLogViewModel> Logs { get; set; } = new();

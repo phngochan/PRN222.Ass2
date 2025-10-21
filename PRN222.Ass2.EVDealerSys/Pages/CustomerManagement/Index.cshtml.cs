@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.Helpers;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models.CustomerManagement;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.CustomerManagement
@@ -13,10 +15,11 @@ namespace PRN222.Ass2.EVDealerSys.Pages.CustomerManagement
     {
         private readonly ICustomerService _customerService;
         private readonly IDealerService _dealerService;
-        public IndexModel(ICustomerService customerService, IDealerService dealerService, IActivityLogService logService) : base(logService)
+        public IndexModel(ICustomerService customerService, IDealerService dealerService, IActivityLogService logService, IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
         {
             _customerService = customerService;
             _dealerService = dealerService;
+            SetActivityLogHubContext(activityLogHubContext);
         }
         public CustomerManagementViewModel ViewModel { get; set; } = new();
         [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
