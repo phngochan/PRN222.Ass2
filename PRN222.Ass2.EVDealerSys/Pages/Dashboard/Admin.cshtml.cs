@@ -118,27 +118,11 @@ public class AdminModel : BaseCrudPageModel
     {
         try
         {
-            var currentMonth = DateTime.Now;
-            var lastMonth = currentMonth.AddMonths(-1);
-
-            var currentOrdersCount = await _orderService.GetOrdersCountByDateRangeAsync(
-                new DateTime(currentMonth.Year, currentMonth.Month, 1),
-                currentMonth);
-
-            var lastMonthOrdersCount = await _orderService.GetOrdersCountByDateRangeAsync(
-                new DateTime(lastMonth.Year, lastMonth.Month, 1),
-                new DateTime(lastMonth.Year, lastMonth.Month, DateTime.DaysInMonth(lastMonth.Year, lastMonth.Month)));
-
-            var ordersGrowth = lastMonthOrdersCount > 0
-                ? $"{((double)(currentOrdersCount - lastMonthOrdersCount) / lastMonthOrdersCount * 100):F1}%"
-                : "+0%";
+            var ordersGrowth = await CalculateOrdersGrowth();
 
             return new SystemStatsViewModel
             {
-                UsersGrowth = "+12%",
                 OrdersGrowth = ordersGrowth,
-                RevenueGrowth = "+15%",
-                CustomersGrowth = "+10%"
             };
         }
         catch
@@ -151,5 +135,28 @@ public class AdminModel : BaseCrudPageModel
                 CustomersGrowth = "0%"
             };
         }
+    }
+
+    private async Task<string> CalculateOrdersGrowth()
+    {
+        try
+        {
+            var currentMonth = DateTime.Now;
+            var lastMonth = currentMonth.AddMonths(-1);
+
+            var currentOrdersCount = await _orderService.GetOrdersCountByDateRangeAsync(
+                new DateTime(currentMonth.Year, currentMonth.Month, 1),
+                currentMonth);
+
+            var lastMonthOrdersCount = await _orderService.GetOrdersCountByDateRangeAsync(
+                new DateTime(lastMonth.Year, lastMonth.Month, 1),
+                new DateTime(lastMonth.Year, lastMonth.Month, DateTime.DaysInMonth(lastMonth.Year, lastMonth.Month)));
+
+            if (lastMonthOrdersCount == 0) return currentOrdersCount > 0 ? "+100%" : "0%";
+
+            var growth = ((double)(currentOrdersCount - lastMonthOrdersCount) / lastMonthOrdersCount * 100);
+            return growth >= 0 ? $"+{growth:F1}%" : $"{growth:F1}%";
+        }
+        catch { return "0%"; }
     }
 }
