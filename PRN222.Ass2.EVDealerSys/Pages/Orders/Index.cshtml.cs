@@ -6,7 +6,7 @@ using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.Hubs;
 
-namespace PRN222.Ass2.EVDealerSys.Pages.Order
+namespace PRN222.Ass2.EVDealerSys.Pages.Orders
 {
     public class IndexModel : PageModel
     {
