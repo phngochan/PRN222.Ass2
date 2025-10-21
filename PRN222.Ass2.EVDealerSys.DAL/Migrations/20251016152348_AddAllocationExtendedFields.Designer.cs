@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PRN222.Ass2.EVDealerSys.DAL.Context;
 
@@ -11,9 +12,11 @@ using PRN222.Ass2.EVDealerSys.DAL.Context;
 namespace PRN222.Ass2.EVDealerSys.DAL.Migrations
 {
     [DbContext(typeof(EvdealerDbContext))]
-    partial class EvdealerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251016152348_AddAllocationExtendedFields")]
+    partial class AddAllocationExtendedFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,9 +49,6 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Migrations
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
-
-                    b.Property<string>("UserName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -472,7 +472,7 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Migrations
                     b.HasOne("PRN222.Ass2.EVDealerSys.BusinessObjects.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("User");
                 });

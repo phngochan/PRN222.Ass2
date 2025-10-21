@@ -1,0 +1,160 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.Report.SalesSummaryModel
+@{
+    ViewData["Title"] = "Báo Cáo Doanh Thu";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-dollar-sign text-success"></i> Báo Cáo Doanh Thu</h2>
+            <p class="text-muted">Tổng hợp doanh thu theo đại lý</p>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Từ ngày</label>
+                    <input type="date" class="form-control" asp-for="FromDate" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Đến ngày</label>
+                    <input type="date" class="form-control" asp-for="ToDate" />
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-filter"></i> Lọc
+                    </button>
+                    <a asp-page="./SalesSummary" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i> Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng Đơn Hàng</h5>
+                    <h2>@Model.GrandTotalOrders</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng Xe Bán</h5>
+                    <h2>@Model.GrandTotalVehicles</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng Doanh Thu</h5>
+                    <h2>@Model.GrandTotalRevenue.ToString("N0") đ</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng Công Nợ</h5>
+                    <h2>@Model.GrandTotalDebt.ToString("N0") đ</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Table -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-table"></i> Chi Tiết Theo Đại Lý</span>
+            <button onclick="exportToExcel()" class="btn btn-sm btn-success">
+                <i class="fas fa-file-excel"></i> Xuất Excel
+            </button>
+        </div>
+        <div class="card-body">
+            @if (Model.ReportData.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" id="salesTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Đại Lý</th>
+                                <th class="text-end">Số Đơn Hàng</th>
+                                <th class="text-end">Số Xe Bán</th>
+                                <th class="text-end">Tổng Doanh Thu</th>
+                                <th class="text-end">Đã Thanh Toán</th>
+                                <th class="text-end">Công Nợ</th>
+                                <th class="text-center">Tỷ Lệ Thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model.ReportData)
+                            {
+                                var paymentRate = row.TotalRevenue > 0 ? (row.TotalPaid / row.TotalRevenue * 100) : 0;
+                                <tr>
+                                    <td><strong>@row.Dealer</strong></td>
+                                    <td class="text-end">@row.TotalOrders</td>
+                                    <td class="text-end">@row.TotalVehicles</td>
+                                    <td class="text-end">@row.TotalRevenue.ToString("N0") đ</td>
+                                    <td class="text-end text-success">@row.TotalPaid.ToString("N0") đ</td>
+                                    <td class="text-end text-danger">@row.TotalDebt.ToString("N0") đ</td>
+                                    <td class="text-center">
+                                        <div class="progress" style="height: 25px;">
+                                            <div class="progress-bar @(paymentRate >= 80 ? "bg-success" : paymentRate >= 50 ? "bg-warning" : "bg-danger")" 
+                                                 role="progressbar" 
+                                                 style="width: @paymentRate%">
+                                                @paymentRate.ToString("F1")%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-secondary fw-bold">
+                            <tr>
+                                <td>TỔNG CỘNG</td>
+                                <td class="text-end">@Model.GrandTotalOrders</td>
+                                <td class="text-end">@Model.GrandTotalVehicles</td>
+                                <td class="text-end">@Model.GrandTotalRevenue.ToString("N0") đ</td>
+                                <td class="text-end text-success">@Model.GrandTotalPaid.ToString("N0") đ</td>
+                                <td class="text-end text-danger">@Model.GrandTotalDebt.ToString("N0") đ</td>
+                                <td class="text-center">
+                                    @{
+                                        var totalRate = Model.GrandTotalRevenue > 0 ? (Model.GrandTotalPaid / Model.GrandTotalRevenue * 100) : 0;
+                                    }
+                                    @totalRate.ToString("F1")%
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Không có dữ liệu trong khoảng thời gian đã chọn.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        function exportToExcel() {
+            const table = document.getElementById('salesTable');
+            const wb = XLSX.utils.table_to_book(table, { sheet: "Báo Cáo Doanh Thu" });
+            XLSX.writeFile(wb, 'BaoCaoDoanhThu_' + new Date().toISOString().slice(0, 10) + '.xlsx');
+        }
+    </script>
+}
