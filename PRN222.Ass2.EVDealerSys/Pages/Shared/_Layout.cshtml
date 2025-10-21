@@ -26,11 +26,30 @@
                     <ul class="navbar-nav mx-auto">
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link ev-nav-link" href="/">
-                                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                                </a>
-                            </li>
+                            @if (User.IsInRole("1"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link ev-nav-link" asp-page="/Dashboard/Admin">
+                                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                                    </a>
+                                </li>
+                            }
+                            @if (User.IsInRole("2"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link ev-nav-link" asp-page="/Dashboard/Manager">
+                                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                                    </a>
+                                </li>
+                            }
+                            @if (User.IsInRole("3"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link ev-nav-link" asp-page="/Dashboard/Staff">
+                                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                                    </a>
+                                </li>
+                            }
 
                             @if (User.IsInRole("1") || User.IsInRole("2"))
                             {
@@ -126,7 +145,7 @@
                             {
                                 <li class="nav-item">
                                     <a class="nav-link ev-nav-link" asp-page="/ActivityLogs/Index">
-                                        <i class="fas fa-history"></i> Activity Logs    
+                                        <i class="fas fa-history"></i> Activity Logs
                                     </a>
                                 </li>
                             }
