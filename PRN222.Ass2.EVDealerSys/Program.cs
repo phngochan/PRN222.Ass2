@@ -30,6 +30,7 @@ builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
 // Vehicle & Inventory
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IVehicleAllocationRepository, VehicleAllocationRepository>();
 builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 
 // Orders & Payments
@@ -43,6 +44,8 @@ builder.Services.AddScoped<IDealerRepository, DealerRepository>();
 
 // Reports
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
+// Activity Logs
+builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 
 // ========== 4. Services ==========
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -50,6 +53,14 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ITestDriveService, TestDriveService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDealerService, DealerService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IAllocationService, AllocationService>();
+
+
+builder.Services.AddScoped<IActivityLogService, ActivityLogService>();
 
 // ========== Add Authen ==========
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -95,6 +106,8 @@ app.UseAuthorization();
 app.UseMiddleware<StartPageRedirectMiddleware>();
 
 app.MapHub<OrderHub>("/orderHub");
+app.MapHub<ManagementHub>("/managementHub");
+app.MapHub<VehicleHub>("/vehicleHub");
 
 app.MapRazorPages();
 

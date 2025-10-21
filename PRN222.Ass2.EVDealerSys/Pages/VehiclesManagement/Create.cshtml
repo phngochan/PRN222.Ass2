@@ -1,0 +1,210 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement.CreateModel
+@{
+    ViewData["Title"] = "Thêm xe mới";
+}
+
+<div class="container-fluid">
+    @if (TempData["Error_Vehicles_Create"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Lỗi tạo xe:</strong> @TempData["Error_Vehicles_Create"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-car"></i> Thông tin xe điện</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.VehicleModel" class="form-label">
+                                    <i class="fas fa-tag"></i> Model <span class="text-danger">*</span>
+                                </label>
+
+                                <input asp-for="Input.VehicleModel" class="form-control" list="availableModels" placeholder="Nhập hoặc chọn model..." />
+
+                                <datalist id="availableModels">
+                                    @foreach (var item in ViewBag.AvailableModels as List<SelectListItem>)
+                                    {
+                                        <option value="@item.Text"></option>
+                                    }
+                                </datalist>
+
+                                <span asp-validation-for="Input.VehicleModel" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.Version" class="form-label">
+                                    <i class="fas fa-code-branch"></i> Phiên bản <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Input.Version" class="form-control" placeholder="VD: Long Range" />
+                                <span asp-validation-for="Input.Version" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.Color" class="form-label">
+                                    <i class="fas fa-palette"></i> Màu sắc <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="Input.Color" class="form-control"
+                                        asp-items="@(ViewBag.AvailableColors as List<SelectListItem>)">
+                                </select>
+                                <span asp-validation-for="Input.Color" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.Price" class="form-label">
+                                    <i class="fas fa-dollar-sign"></i> Giá (VNĐ) <span class="text-danger">*</span>
+                                </label>
+
+                                <input type="text" id="priceDisplay" class="form-control"
+                                       value="@(Model.Input.Price > 0 ? Model.Input.Price.ToString("N0") : "")" />
+                                <input type="hidden" asp-for="Input.Price" id="priceHidden" />
+
+                                <span asp-validation-for="Input.Price" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Config" class="form-label">
+                                <i class="fas fa-cogs"></i> Cấu hình
+                            </label>
+                            <textarea asp-for="Input.Config" class="form-control" rows="4" placeholder="Mô tả cấu hình chi tiết của xe..."></textarea>
+                            <span asp-validation-for="Input.Config" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Status" class="form-label">
+                                <i class="fas fa-info-circle"></i> Trạng thái <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Input.Status" class="form-control"
+                                    asp-items="@(ViewBag.AvailableStatus as List<SelectListItem>)">
+                                <option value="">-- Chọn trạng thái --</option>
+                            </select>
+                            <span asp-validation-for="Input.Status" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Lưu xe mới
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            // Auto dismiss alerts after 8 seconds
+            setTimeout(function () {
+                $('.alert').fadeOut();
+            }, 8000);
+
+            // Clear messages when user starts typing
+            $('input, select, textarea').on('input change', function () {
+                $('.alert').fadeOut();
+            });
+        });
+
+        function formatPrice(val) {
+            val = val.replace(/,/g, "");
+            if (val === "" || isNaN(val)) return "";
+            return parseFloat(val).toLocaleString("en-US");
+        }
+
+        const display = document.getElementById("priceDisplay");
+        const hidden = document.getElementById("priceHidden");
+
+        if (display.value) {
+            display.value = formatPrice(display.value);
+            hidden.value = display.value.replace(/,/g, "");
+        }
+
+        display.addEventListener("input", function () {
+            let raw = display.value.replace(/,/g, "");
+            if (!isNaN(raw) && raw !== "") {
+                display.value = formatPrice(raw);
+                hidden.value = raw;
+            } else {
+                hidden.value = "";
+            }
+        });
+
+        document.querySelector("form").addEventListener("submit", function () {
+            hidden.value = display.value.replace(/,/g, "");
+        });
+
+    </script>
+}
+
+<style>
+    .card-header.bg-primary {
+        background: linear-gradient(135deg, #3e5f44 0%, #5e936c 100%) !important;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #3e5f44;
+    }
+
+    .form-control:focus {
+        border-color: #5e936c;
+        box-shadow: 0 0 0 0.2rem rgba(94, 147, 108, 0.25);
+    }
+
+    .btn-success {
+        background-color: #6b9b76;
+        border-color: #6b9b76;
+    }
+
+        .btn-success:hover {
+            background-color: #5e936c;
+            border-color: #5e936c;
+        }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .custom-select {
+        background-color: white;
+        border: 1px solid #ced4da;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+        padding-right: 2.5rem;
+    }
+
+        .custom-select option {
+            background-color: white;
+            color: #333;
+            padding: 8px 12px;
+        }
+
+            .custom-select option:hover {
+                background-color: #e8ffd7;
+            }
+</style>

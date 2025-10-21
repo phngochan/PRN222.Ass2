@@ -47,6 +47,9 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Migrations
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
@@ -406,14 +409,41 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Migrations
                     b.Property<DateTime?>("AllocationDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ApprovalNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ApprovedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeliveryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DesiredDeliveryDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int?>("FromLocationType")
                         .HasColumnType("int");
 
                     b.Property<int?>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("RequestDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("RequestedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RequestedColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ShipmentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("StaffSuggestion")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Status")
                         .HasColumnType("int");
@@ -425,6 +455,10 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApprovedByUserId");
+
+                    b.HasIndex("RequestedByUserId");
 
                     b.HasIndex("ToDealerId");
 
@@ -438,7 +472,7 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Migrations
                     b.HasOne("PRN222.Ass2.EVDealerSys.BusinessObjects.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("User");
                 });
@@ -559,6 +593,14 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Migrations
 
             modelBuilder.Entity("PRN222.Ass2.EVDealerSys.BusinessObjects.Models.VehicleAllocation", b =>
                 {
+                    b.HasOne("PRN222.Ass2.EVDealerSys.BusinessObjects.Models.User", "ApprovedByUser")
+                        .WithMany()
+                        .HasForeignKey("ApprovedByUserId");
+
+                    b.HasOne("PRN222.Ass2.EVDealerSys.BusinessObjects.Models.User", "RequestedByUser")
+                        .WithMany()
+                        .HasForeignKey("RequestedByUserId");
+
                     b.HasOne("PRN222.Ass2.EVDealerSys.BusinessObjects.Models.Dealer", "ToDealer")
                         .WithMany("VehicleAllocations")
                         .HasForeignKey("ToDealerId");
@@ -566,6 +608,10 @@ namespace PRN222.Ass2.EVDealerSys.DAL.Migrations
                     b.HasOne("PRN222.Ass2.EVDealerSys.BusinessObjects.Models.Vehicle", "Vehicle")
                         .WithMany("VehicleAllocations")
                         .HasForeignKey("VehicleId");
+
+                    b.Navigation("ApprovedByUser");
+
+                    b.Navigation("RequestedByUser");
 
                     b.Navigation("ToDealer");
 

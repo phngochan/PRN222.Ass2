@@ -117,7 +117,30 @@ public partial class EvdealerDbContext : DbContext
             entity.HasOne(l => l.User)
                   .WithMany()
                   .HasForeignKey(l => l.UserId)
-                  .OnDelete(DeleteBehavior.SetNull);
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<VehicleAllocation>(entity =>
+        {
+            entity.HasOne(va => va.RequestedByUser)
+                .WithMany()
+                .HasForeignKey(va => va.RequestedByUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(va => va.ApprovedByUser)
+                .WithMany()
+                .HasForeignKey(va => va.ApprovedByUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(va => va.ToDealer)
+                .WithMany(d => d.VehicleAllocations)
+                .HasForeignKey(va => va.ToDealerId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(va => va.Vehicle)
+                .WithMany(v => v.VehicleAllocations)
+                .HasForeignKey(va => va.VehicleId)
+                .OnDelete(DeleteBehavior.NoAction);
         });
 
         base.OnModelCreating(modelBuilder);

@@ -1,6 +1,8 @@
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace PRN222.Ass2.EVDealerSys.BLL.Implementations;
 public class UserService(IUserRepository userRepo) : IUserService
@@ -37,8 +39,8 @@ public class UserService(IUserRepository userRepo) : IUserService
                 return (false, "Email đã được sử dụng bởi user khác!", null);
             }
 
-            // Hash password (in future implementation)
-            // user.Password = HashPassword(user.Password);
+            // Hash password
+            user.Password = HashPassword(user.Password!);
 
             var createdUser = await _userRepo.CreateAsync(user);
             return (true, "Tạo user thành công!", createdUser);
@@ -61,8 +63,8 @@ public class UserService(IUserRepository userRepo) : IUserService
                 return (false, "User không tồn tại!", null);
             }
 
-            // Validate input
-            var validationResult = ValidateUser(user);
+            // Validate input (skip password validation for update)
+            var validationResult = ValidateUserForUpdate(user);
             if (!validationResult.IsValid)
             {
                 return (false, validationResult.Message, null);
@@ -81,8 +83,13 @@ public class UserService(IUserRepository userRepo) : IUserService
             }
             else
             {
-                // Hash new password (in future implementation)
-                // user.Password = HashPassword(user.Password);
+                // Validate password length if new password is provided
+                if (user.Password.Length < 6)
+                {
+                    return (false, "Mật khẩu phải có ít nhất 6 ký tự!", null);
+                }
+                // Hash new password
+                user.Password = HashPassword(user.Password);
             }
 
             var updatedUser = await _userRepo.UpdateAsync(user);
@@ -149,7 +156,7 @@ public class UserService(IUserRepository userRepo) : IUserService
         return await _userRepo.SearchAsync(searchTerm);
     }
 
-    // Validate user data
+    // Validate user data (for create)
     private (bool IsValid, string Message) ValidateUser(User user)
     {
         if (string.IsNullOrWhiteSpace(user.Name))
@@ -175,6 +182,32 @@ public class UserService(IUserRepository userRepo) : IUserService
         if (user.Password.Length < 6)
         {
             return (false, "Mật khẩu phải có ít nhất 6 ký tự!");
+        }
+
+        if (user.Role == null || !IsValidRole(user.Role.Value))
+        {
+            return (false, "Role không hợp lệ!");
+        }
+
+        return (true, string.Empty);
+    }
+
+    // Validate user data (for update - password is optional)
+    private (bool IsValid, string Message) ValidateUserForUpdate(User user)
+    {
+        if (string.IsNullOrWhiteSpace(user.Name))
+        {
+            return (false, "Tên user là bắt buộc!");
+        }
+
+        if (string.IsNullOrWhiteSpace(user.Email))
+        {
+            return (false, "Email là bắt buộc!");
+        }
+
+        if (!IsValidEmail(user.Email))
+        {
+            return (false, "Email không đúng định dạng!");
         }
 
         if (user.Role == null || !IsValidRole(user.Role.Value))
@@ -218,11 +251,21 @@ public class UserService(IUserRepository userRepo) : IUserService
         };
     }
 
-    // Future: Add password hashing
+    // Hash password using SHA256
     private string HashPassword(string password)
     {
-        // Implement password hashing (BCrypt, etc.)
-        return password; // Temporary
+        using (var sha256 = SHA256.Create())
+        {
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(hashedBytes);
+        }
+    }
+
+    // Verify password
+    public bool VerifyPassword(string password, string hashedPassword)
+    {
+        var hashOfInput = HashPassword(password);
+        return hashOfInput == hashedPassword;
     }
 
 }

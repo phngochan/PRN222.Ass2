@@ -1,0 +1,224 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.Allocation.ManageAllocationsModel
+@{
+    ViewData["Title"] = "Quản Lý Phân Bổ Xe";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-boxes"></i> Quản Lý Phân Bổ Xe</h2>
+</div>
+
+<!-- Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center bg-warning text-white">
+            <div class="card-body">
+                <h3>@Model.AllRequests.Count(r => r.Status == 0)</h3>
+                <p class="mb-0">Chờ duyệt</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-success text-white">
+            <div class="card-body">
+                <h3>@Model.AllRequests.Count(r => r.Status == 1)</h3>
+                <p class="mb-0">Đã duyệt</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-info text-white">
+            <div class="card-body">
+                <h3>@Model.AllRequests.Count(r => r.Status == 3)</h3>
+                <p class="mb-0">Đang vận chuyển</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-primary text-white">
+            <div class="card-body">
+                <h3>@Model.AllRequests.Count(r => r.Status == 4)</h3>
+                <p class="mb-0">Đã giao</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Trạng thái</label>
+                <select name="statusFilter" class="form-select" asp-for="StatusFilter">
+                    <option value="">Tất cả</option>
+                    <option value="0">Chờ duyệt</option>
+                    <option value="1">Đã duyệt</option>
+                    <option value="2">Từ chối</option>
+                    <option value="3">Đang vận chuyển</option>
+                    <option value="4">Đã giao</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Dealer</label>
+                <select name="dealerFilter" class="form-select" asp-for="DealerFilter">
+                    <option value="">Tất cả</option>
+                    @foreach (var dealer in Model.AllRequests.GroupBy(r => r.DealerName).Select(g => g.Key).Distinct())
+                    {
+                        <option value="@dealer">@dealer</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Tìm kiếm</label>
+                <input type="text" name="searchTerm" class="form-control" placeholder="Tìm theo mẫu xe..." value="@Model.SearchTerm" />
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-success w-100"><i class="fas fa-search"></i> Lọc</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Allocations Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Dealer</th>
+                        <th>Xe</th>
+                        <th>SL</th>
+                        <th>Ngày YC</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model.Requests)
+                    {
+                        <tr>
+                            <td><strong>#@request.Id</strong></td>
+                            <td>@request.DealerName</td>
+                            <td>@request.VehicleModel @request.VehicleVersion</td>
+                            <td><span class="badge bg-secondary">@request.Quantity</span></td>
+                            <td>@request.RequestDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @switch(request.Status)
+                                {
+                                    case 0: <span class="badge bg-warning">Chờ duyệt</span>; break;
+                                    case 1: <span class="badge bg-success">Đã duyệt</span>; break;
+                                    case 2: <span class="badge bg-danger">Từ chối</span>; break;
+                                    case 3: <span class="badge bg-info">Đang chuyển</span>; break;
+                                    case 4: <span class="badge bg-primary">Đã giao</span>; break;
+                                }
+                            </td>
+                            <td>
+                                @if (request.Status == 1)
+                                {
+                                    <form method="post" asp-page-handler="Fulfill" class="d-inline">
+                                        <input type="hidden" name="allocationId" value="@request.Id" />
+                                        <button type="submit" class="btn btn-sm btn-primary" title="Xuất kho">
+                                            <i class="fas fa-shipping-fast"></i> Xuất kho
+                                        </button>
+                                    </form>
+                                }
+                                @if (request.Status == 3)
+                                {
+                                    <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#deliverModal-@request.Id" title="Xác nhận giao hàng">
+                                        <i class="fas fa-box-open"></i> Giao hàng
+                                    </button>
+                                }
+                                <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detailModal-@request.Id">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Detail & Deliver Modals -->
+@foreach (var request in Model.Requests)
+{
+    <!-- Detail Modal -->
+    <div class="modal fade" id="detailModal-@request.Id" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-ev-pale">
+                    <h5 class="modal-title">Chi Tiết Phân Bổ #@request.Id</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Thông Tin Yêu Cầu</h6>
+                            <p><strong>Dealer:</strong> @request.DealerName</p>
+                            <p><strong>Xe:</strong> @request.VehicleModel @request.VehicleVersion</p>
+                            <p><strong>Số lượng:</strong> @request.Quantity</p>
+                            <p><strong>Màu:</strong> @request.RequestedColor</p>
+                            <p><strong>Lý do:</strong> @request.ReasonText</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Trạng Thái</h6>
+                            <p><strong>Ngày yêu cầu:</strong> @request.RequestDate.ToString("dd/MM/yyyy")</p>
+                            @if (request.AllocationDate.HasValue)
+                            {
+                                <p><strong>Ngày phê duyệt:</strong> @request.AllocationDate.Value.ToString("dd/MM/yyyy")</p>
+                            }
+                            @if (request.ShipmentDate.HasValue)
+                            {
+                                <p><strong>Ngày xuất kho:</strong> @request.ShipmentDate.Value.ToString("dd/MM/yyyy")</p>
+                            }
+                            @if (request.DeliveryDate.HasValue)
+                            {
+                                <p><strong>Ngày giao hàng:</strong> @request.DeliveryDate.Value.ToString("dd/MM/yyyy")</p>
+                            }
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(request.ApprovalNotes))
+                    {
+                        <hr />
+                        <div class="alert alert-info">
+                            <strong>Ghi chú phê duyệt:</strong> @request.ApprovalNotes
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deliver Modal -->
+    @if (request.Status == 3)
+    {
+        <div class="modal fade" id="deliverModal-@request.Id" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" asp-page-handler="Deliver">
+                        <input type="hidden" name="allocationId" value="@request.Id" />
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title"><i class="fas fa-check-circle"></i> Xác Nhận Giao Hàng</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Xác nhận xe đã được giao đến <strong>@request.DealerName</strong>?</p>
+                            <div class="mb-3">
+                                <label class="form-label">Ngày giao hàng</label>
+                                <input type="date" name="deliveryDate" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-success">Xác Nhận</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+}
