@@ -5,9 +5,11 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.TestDrive;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.TestDrives;
@@ -16,15 +18,18 @@ public class IndexModel : PageModel
 {
     private readonly ITestDriveService _testDriveService;
     private readonly IVehicleService _vehicleService;
+    private readonly IHubContext<TestDriveHub> _hubContext;
     private readonly ILogger<IndexModel> _logger;
 
     public IndexModel(
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
+        IHubContext<TestDriveHub> hubContext,
         ILogger<IndexModel> logger)
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;
+        _hubContext = hubContext;
         _logger = logger;
     }
 
@@ -54,10 +59,40 @@ public class IndexModel : PageModel
     {
         try
         {
+            // Get old status before update for notification
+            var testDrive = await _testDriveService.GetByIdAsync(id);
+            var oldStatus = testDrive?.Status ?? 0;
+            
             var updated = await _testDriveService.UpdateStatusAsync(id, status);
             
             if (updated)
             {
+                var statusName = status switch
+                {
+                    1 => "Chờ xác nhận",
+                    2 => "Đã xác nhận",
+                    3 => "Hoàn thành",
+                    4 => "Đã hủy",
+                    5 => "Khách hàng hủy",
+                    6 => "Không đến",
+                    _ => "Không xác định"
+                };
+                
+                // Send real-time notification via SignalR
+                await _hubContext.Clients.All.SendAsync("TestDriveStatusChanged", new
+                {
+                    testDriveId = id,
+                    oldStatus,
+                    newStatus = status,
+                    statusName,
+                    customerName = testDrive?.CustomerName,
+                    vehicleName = testDrive?.VehicleName,
+                    timestamp = DateTime.Now
+                });
+                
+                _logger.LogInformation("Test drive status changed and SignalR notification sent: {Id} from {OldStatus} to {NewStatus}", 
+                    id, oldStatus, status);
+                
                 TempData["SuccessMessage"] = status switch
                 {
                     1 => "Cập nhật trạng thái thành chờ xác nhận.",

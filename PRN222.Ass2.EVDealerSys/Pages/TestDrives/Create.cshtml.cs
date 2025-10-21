@@ -5,9 +5,11 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.TestDrive;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.TestDrives;
@@ -17,17 +19,20 @@ public class CreateModel : PageModel
     private readonly ITestDriveService _testDriveService;
     private readonly IVehicleService _vehicleService;
     private readonly ICustomerService _customerService;
+    private readonly IHubContext<TestDriveHub> _hubContext;
     private readonly ILogger<CreateModel> _logger;
 
     public CreateModel(
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
         ICustomerService customerService,
+        IHubContext<TestDriveHub> hubContext,
         ILogger<CreateModel> logger)
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;
         _customerService = customerService;
+        _hubContext = hubContext;
         _logger = logger;
     }
 
@@ -131,7 +136,24 @@ public class CreateModel : PageModel
 
         try
         {
-            await _testDriveService.CreateAsync(dto);
+            var createdTestDrive = await _testDriveService.CreateAsync(dto);
+            
+            // Send real-time notification via SignalR
+            await _hubContext.Clients.All.SendAsync("TestDriveCreated", new
+            {
+                id = createdTestDrive.Id,
+                vehicleName = Form.VehicleName,
+                customerName = Form.CustomerName,
+                scheduledDate = Form.ScheduledDate.ToString("dd/MM/yyyy"),
+                startTime = Form.StartTime.ToString(@"hh\:mm"),
+                endTime = Form.EndTime.ToString(@"hh\:mm"),
+                status = createdTestDrive.Status,
+                statusName = GetStatusName(createdTestDrive.Status ?? 2),
+                timestamp = DateTime.Now
+            });
+            
+            _logger.LogInformation("Test drive created and SignalR notification sent: {Id}", createdTestDrive.Id);
+            
             TempData["SuccessMessage"] = "Đặt lịch thử xe thành công.";
             return RedirectToPage("./Index");
         }
@@ -322,4 +344,15 @@ public class CreateModel : PageModel
         var userClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return int.TryParse(userClaim, out var userId) ? userId : null;
     }
+
+    private static string GetStatusName(int status) => status switch
+    {
+        1 => "Chờ xác nhận",
+        2 => "Đã xác nhận",
+        3 => "Hoàn thành",
+        4 => "Đã hủy",
+        5 => "Khách hàng hủy",
+        6 => "Không đến",
+        _ => "Không xác định"
+    };
 }

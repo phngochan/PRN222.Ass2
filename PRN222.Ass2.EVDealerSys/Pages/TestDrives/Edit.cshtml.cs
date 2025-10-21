@@ -5,9 +5,11 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.TestDrive;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.TestDrives;
@@ -16,15 +18,18 @@ public class EditModel : PageModel
 {
     private readonly ITestDriveService _testDriveService;
     private readonly IVehicleService _vehicleService;
+    private readonly IHubContext<TestDriveHub> _hubContext;
     private readonly ILogger<EditModel> _logger;
 
     public EditModel(
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
+        IHubContext<TestDriveHub> hubContext,
         ILogger<EditModel> logger)
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;
+        _hubContext = hubContext;
         _logger = logger;
     }
 
@@ -151,6 +156,24 @@ public class EditModel : PageModel
         {
             var result = await _testDriveService.UpdateAsync(dto);
             _logger.LogInformation("UpdateAsync completed. Result: {ResultId}", result?.Id);
+            
+            // Send real-time notification via SignalR
+            await _hubContext.Clients.All.SendAsync("TestDriveUpdated", new
+            {
+                id = result.Id,
+                vehicleId = result.VehicleId,
+                customerId = result.CustomerId,
+                customerName = dto.CustomerName,
+                scheduledDate = dto.ScheduledDate.ToString("dd/MM/yyyy"),
+                startTime = dto.StartTime.ToString(@"hh\:mm"),
+                endTime = dto.EndTime.ToString(@"hh\:mm"),
+                status = result.Status,
+                statusName = GetStatusName(result.Status ?? 2),
+                timestamp = DateTime.Now
+            });
+            
+            _logger.LogInformation("Test drive updated and SignalR notification sent: {Id}", result.Id);
+            
             TempData["SuccessMessage"] = "Cập nhật lịch thử xe thành công.";
             return RedirectToPage("./Index");
         }
