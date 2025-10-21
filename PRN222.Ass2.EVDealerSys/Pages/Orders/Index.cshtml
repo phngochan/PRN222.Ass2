@@ -17,20 +17,39 @@
             background-color: transparent;
         }
     }
+
+    .new-order-highlight {
+        animation: highlight-green 3s ease-out;
+    }
+
+    @@keyframes highlight-green {
+        0% {
+            background-color: #28a745;
+        }
+        100% {
+            background-color: transparent;
+        }
+    }
 </style>
 
 <h2>Quản lý đơn hàng</h2>
 
 @if (TempData["Message"] != null)
 {
-    <div class="alert alert-success">@TempData["Message"]</div>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
 }
 
-<form method="post" asp-page-handler="Create" class="mb-4">
+<form method="post" asp-page-handler="Create" class="mb-4" id="createOrderForm">
     <div class="form-group">
         <label>Khách hàng</label>
         <select class="form-control" asp-for="CustomerId" required>
@@ -114,12 +133,10 @@
                             }
                             else if (isPaid)
                             {
-
                                 <span class="badge bg-success">Đang xử lý</span>
                             }
                             else
                             {
-
                                 <span class="badge bg-danger">Chưa thanh toán</span>
                             }
                         </td>
@@ -163,6 +180,14 @@
         </table>
 
         <nav>
+            <ul class="pagination">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(Model.PageIndex == i ? "active" : "")">
+                        <a class="page-link" asp-page="./Index" asp-route-pageIndex="@i" asp-route-searchCustomer="@Model.SearchCustomer">@i</a>
+                    </li>
+                }
+            </ul>
         </nav>
     </div>
 </div>
@@ -212,29 +237,20 @@
         </div>
     </div>
 }
-            </tbody>
-        </table>
 
-        <nav>
-            <ul class="pagination">
-                @for (int i = 1; i <= Model.TotalPages; i++)
-                {
-                    <li class="page-item @(Model.PageIndex == i ? "active" : "")">
-                        <a class="page-link" asp-page="./Index" asp-route-pageIndex="@i" asp-route-searchCustomer="@Model.SearchCustomer">@i</a>
-                    </li>
-                }
-            </ul>
-        </nav>
-    </div>
-</div>
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+@section Scripts {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 
 <script>
     $(document).ready(function () {
+        // Đánh dấu để tránh reload khi đang ở trang hiện tại
+        let isCurrentPageAction = false;
+
+        // Đánh dấu khi submit form từ trang này
+        $('#createOrderForm').on('submit', function() {
+            isCurrentPageAction = true;
+        });
+
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/orderHub")
             .configureLogging(signalR.LogLevel.Information)
@@ -242,7 +258,17 @@
 
         connection.on("ReceiveNewOrder", function (order) {
             console.log("📦 Đơn hàng mới:", order);
-            location.reload();
+            
+            // CHỈ reload nếu KHÔNG phải từ hành động của user hiện tại
+            if (!isCurrentPageAction) {
+                // Hiển thị notification thay vì reload ngay
+                if (confirm("Có đơn hàng mới! Bạn có muốn tải lại trang không?")) {
+                    location.reload();
+                }
+            } else {
+                // Reset flag sau khi xử lý
+                isCurrentPageAction = false;
+            }
         });
 
         connection.on("ReceiveOrderStatusUpdate", function (update) {
@@ -261,6 +287,10 @@
                 statusCell.html(badgeHtml);
 
                 row.find(".order-actions button").prop('disabled', true);
+                
+                // Thêm hiệu ứng
+                row.addClass("update-highlight");
+                setTimeout(() => row.removeClass("update-highlight"), 2000);
             }
         });
 
@@ -276,12 +306,11 @@
                     const unitPriceString = data.unitPrice.replace(/\./g, '').replace(' đ', '');
                     const unitPriceNum = parseFloat(unitPriceString);
                     const quantityNum = parseInt(data.quantity);
-
                     const totalDetailPriceNum = unitPriceNum * quantityNum;
 
                     const totalDetailPriceFormatted = isNaN(totalDetailPriceNum)
                         ? 'Lỗi định dạng'
-                        : totalDetailPriceNum.toLocaleString('vi-VN') + ',000,000 đ';
+                        : totalDetailPriceNum.toLocaleString('vi-VN') + ' đ';
 
                     const detailHtml = `
                         <strong>Chi tiết đơn:</strong>
@@ -305,3 +334,4 @@
             .catch(err => console.error("❌ Lỗi SignalR:", err));
     });
 </script>
+}

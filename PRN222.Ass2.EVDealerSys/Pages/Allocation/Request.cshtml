@@ -1,0 +1,180 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.Allocation.RequestModel
+@{
+	ViewData["Title"] = "Yêu Cầu Phân Bổ Xe";
+}
+
+<div class="row">
+	<div class="col-md-8">
+		<div class="card">
+			<div class="card-header bg-ev-dark text-white">
+				<h5 class="mb-0"><i class="fas fa-truck-loading"></i> Tạo Yêu Cầu Phân Bổ Xe</h5>
+			</div>
+			<div class="card-body">
+				<form method="post">
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label class="form-label"><i class="fas fa-car"></i> Chọn xe <span class="text-danger">*</span></label>
+							<select asp-for="Input.VehicleId" class="form-select" id="vehicleSelect" required>
+								<option value="">-- Chọn xe --</option>
+								@foreach (var vehicle in Model.Vehicles)
+								{
+									<option value="@vehicle.Id"
+											data-model="@vehicle.Model"
+											data-version="@vehicle.Version"
+											data-color="@vehicle.Color"
+											data-price="@vehicle.Price">
+										@vehicle.Model @vehicle.Version - @vehicle.Color
+									</option>
+								}
+							</select>
+							<span asp-validation-for="Input.VehicleId" class="text-danger"></span>
+						</div>
+
+						<div class="col-md-6 mb-3">
+							<label class="form-label"><i class="fas fa-sort-numeric-up"></i> Số lượng <span class="text-danger">*</span></label>
+							<input asp-for="Input.Quantity" type="number" class="form-control" min="1" required id="quantityInput" />
+							<span asp-validation-for="Input.Quantity" class="text-danger"></span>
+							<small class="text-muted">Tồn kho khả dụng: <span id="availableStock" class="fw-bold text-success">-</span></small>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-6 mb-3">
+							<label class="form-label"><i class="fas fa-palette"></i> Màu mong muốn</label>
+							<input asp-for="Input.RequestedColor" type="text" class="form-control" placeholder="VD: Trắng, Đen, Xanh..." />
+						</div>
+
+						<div class="col-md-6 mb-3">
+							<label class="form-label"><i class="fas fa-calendar-alt"></i> Thời hạn mong muốn <span class="text-danger">*</span></label>
+							<input asp-for="Input.DesiredDeliveryDate" type="date" class="form-control" required />
+							<span asp-validation-for="Input.DesiredDeliveryDate" class="text-danger"></span>
+						</div>
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label"><i class="fas fa-question-circle"></i> Lý do yêu cầu <span class="text-danger">*</span></label>
+						<select asp-for="Input.Reason" class="form-select" required>
+							<option value="">-- Chọn lý do --</option>
+							<option value="1">Đáp ứng đơn hàng</option>
+							<option value="2">Dự trữ kho</option>
+							<option value="3">Test drive</option>
+							<option value="4">Trưng bày showroom</option>
+						</select>
+						<span asp-validation-for="Input.Reason" class="text-danger"></span>
+					</div>
+
+					<div class="mb-3">
+						<label class="form-label"><i class="fas fa-comment"></i> Ghi chú thêm</label>
+						<textarea asp-for="Input.ReasonText" class="form-control" rows="3" placeholder="Thông tin bổ sung..."></textarea>
+					</div>
+
+					<div class="alert alert-info">
+						<i class="fas fa-info-circle"></i>
+						<strong>Lưu ý:</strong> Yêu cầu sẽ được gửi đến EVM để xem xét và phê duyệt.
+					</div>
+
+					<div class="d-grid gap-2">
+						<button type="submit" class="btn btn-primary btn-lg">
+							<i class="fas fa-paper-plane"></i> Gửi Yêu Cầu
+						</button>
+						<a asp-page="./MyRequests" class="btn btn-outline-secondary">
+							<i class="fas fa-list"></i> Xem Yêu Cầu Của Tôi
+						</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-md-4">
+		<div class="card bg-light">
+			<div class="card-header bg-ev-medium text-white">
+				<h6 class="mb-0"><i class="fas fa-chart-line"></i> Thông Tin Xe</h6>
+			</div>
+			<div class="card-body" id="vehicleInfo">
+				<p class="text-muted"><i>Chọn xe để xem thông tin chi tiết</i></p>
+			</div>
+		</div>
+
+		<div class="card mt-3 bg-light">
+			<div class="card-header bg-warning text-dark">
+				<h6 class="mb-0"><i class="fas fa-lightbulb"></i> Hướng Dẫn</h6>
+			</div>
+			<div class="card-body">
+				<ol class="small">
+					<li>Chọn mẫu xe cần phân bổ</li>
+					<li>Nhập số lượng và màu mong muốn</li>
+					<li>Chọn thời hạn giao hàng</li>
+					<li>Ghi rõ lý do phân bổ</li>
+					<li>Gửi yêu cầu và chờ phê duyệt</li>
+				</ol>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<partial name="_ValidationScriptsPartial" />
+	<script>
+		$(document).ready(function() {
+			// Khi chọn xe, hiển thị thông tin và kiểm tra tồn kho
+			$('#vehicleSelect').change(function() {
+				const selected = $(this).find(':selected');
+				const vehicleId = selected.val();
+
+				if (!vehicleId) {
+					$('#vehicleInfo').html('<p class="text-muted"><i>Chọn xe để xem thông tin chi tiết</i></p>');
+					$('#availableStock').text('-');
+					return;
+				}
+
+				const model = selected.data('model');
+				const version = selected.data('version');
+				const color = selected.data('color');
+				const price = selected.data('price');
+
+				$('#vehicleInfo').html(`
+					<h6 class="text-ev-dark">${model} ${version}</h6>
+					<hr>
+					<p><strong>Màu:</strong> ${color}</p>
+					<p><strong>Giá:</strong> ${parseInt(price).toLocaleString('vi-VN')} đ</p>
+					<div class="spinner-border spinner-border-sm text-primary" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div> Đang kiểm tra tồn kho...
+				`);
+
+				// AJAX check stock
+				$.get('/Allocation/Request?handler=CheckStock', { vehicleId: vehicleId }, function(data) {
+					$('#availableStock').text(data.availableStock);
+					$('#vehicleInfo').html(`
+						<h6 class="text-ev-dark">${model} ${version}</h6>
+						<hr>
+						<p><strong>Màu:</strong> ${color}</p>
+						<p><strong>Giá:</strong> ${parseInt(price).toLocaleString('vi-VN')} đ</p>
+						<p><strong>Tồn kho EVM:</strong> <span class="badge ${data.availableStock > 0 ? 'bg-success' : 'bg-danger'}">${data.availableStock}</span></p>
+					`);
+				});
+			});
+
+			// Validate số lượng với tồn kho
+			$('#quantityInput').on('input', function() {
+				const quantity = parseInt($(this).val());
+				const stock = parseInt($('#availableStock').text());
+
+				if (quantity > stock) {
+					$(this).addClass('is-invalid');
+					$(this).siblings('.text-danger').remove();
+					$(this).after('<div class="text-danger">Vượt quá tồn kho khả dụng!</div>');
+				} else {
+					$(this).removeClass('is-invalid');
+					$(this).siblings('.text-danger').remove();
+				}
+			});
+
+			// Set min date to today
+			const today = new Date().toISOString().split('T')[0];
+			$('input[type="date"]').attr('min', today);
+		});
+	</script>
+}

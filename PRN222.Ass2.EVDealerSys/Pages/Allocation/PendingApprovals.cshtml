@@ -1,0 +1,152 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.Allocation.PendingApprovalsModel
+@{
+    ViewData["Title"] = "Phê Duyệt Yêu Cầu Phân Bổ";
+}
+
+<h2><i class="fas fa-tasks"></i> Yêu Cầu Phân Bổ Chờ Duyệt</h2>
+
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i> 
+    <strong>@Model.PendingRequests.Count()</strong> yêu cầu đang chờ phê duyệt.
+</div>
+
+@if (!Model.PendingRequests.Any())
+{
+    <div class="alert alert-info">
+        <i class="fas fa-check-circle"></i> Không có yêu cầu nào chờ xử lý.
+    </div>
+}
+else
+{
+    foreach (var request in Model.PendingRequests)
+    {
+        <div class="card mb-3">
+            <div class="card-header bg-warning">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="mb-0">
+                            <i class="fas fa-file-invoice"></i> Yêu Cầu #@request.Id - @request.DealerName
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-secondary">@request.RequestDate.ToString("dd/MM/yyyy")</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="text-ev-dark">Thông Tin Xe</h6>
+                        <p><strong>Model:</strong> @request.VehicleModel @request.VehicleVersion</p>
+                        <p><strong>Số lượng:</strong> <span class="badge bg-primary">@request.Quantity</span></p>
+                        <p><strong>Màu:</strong> @request.RequestedColor</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-ev-dark">Chi Tiết Yêu Cầu</h6>
+                        <p><strong>Lý do:</strong> @request.ReasonText</p>
+                        <p><strong>Thời hạn:</strong> @request.DesiredDeliveryDate.ToString("dd/MM/yyyy")</p>
+                        <p><strong>Người yêu cầu:</strong> @request.RequestedByUserName</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-ev-dark">Tồn Kho</h6>
+                        @if (request.AvailableStock.HasValue)
+                        {
+                            <div class="alert alert-@(request.IsStockSufficient ? "success" : "danger") mb-0">
+                                <h4 class="mb-0">@request.AvailableStock</h4>
+                                <small>
+                                    @if (request.IsStockSufficient)
+                                    {
+                                        <i class="fas fa-check-circle"></i> <text>Đủ hàng</text>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-times-circle"></i> <text>Không đủ (thiếu @(request.Quantity - request.AvailableStock.Value))</text>
+                                    }
+                                </small>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <hr />
+
+                <form method="post" asp-page-handler="Approve" class="d-inline">
+                    <input type="hidden" name="allocationId" value="@request.Id" />
+                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal-@request.Id"
+                            @(request.IsStockSufficient ? "" : "disabled")>
+                        <i class="fas fa-check"></i> Phê Duyệt
+                    </button>
+                </form>
+
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal-@request.Id">
+                    <i class="fas fa-times"></i> Từ Chối
+                </button>
+
+                <button class="btn btn-info" data-bs-toggle="collapse" data-bs-target="#detail-@request.Id">
+                    <i class="fas fa-info-circle"></i> Xem Thêm
+                </button>
+
+                <div id="detail-@request.Id" class="collapse mt-3">
+                    <div class="alert alert-light">
+                        <p><strong>Ghi chú từ Dealer:</strong> @request.ReasonText</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approve Modal -->
+        <div class="modal fade" id="approveModal-@request.Id" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" asp-page-handler="Approve">
+                        <input type="hidden" name="allocationId" value="@request.Id" />
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title"><i class="fas fa-check-circle"></i> Phê Duyệt Yêu Cầu</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Ghi chú phê duyệt</label>
+                                <textarea name="notes" class="form-control" rows="3" placeholder="Ghi chú cho dealer..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Đề xuất (tuỳ chọn)</label>
+                                <textarea name="suggestion" class="form-control" rows="2" placeholder="VD: Giao từ kho miền Nam để nhanh hơn..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-success">Xác Nhận Phê Duyệt</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reject Modal -->
+        <div class="modal fade" id="rejectModal-@request.Id" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" asp-page-handler="Reject">
+                        <input type="hidden" name="allocationId" value="@request.Id" />
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title"><i class="fas fa-times-circle"></i> Từ Chối Yêu Cầu</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label">Lý do từ chối <span class="text-danger">*</span></label>
+                                <textarea name="reason" class="form-control" rows="4" required placeholder="Giải thích lý do từ chối..."></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-danger">Xác Nhận Từ Chối</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+}
