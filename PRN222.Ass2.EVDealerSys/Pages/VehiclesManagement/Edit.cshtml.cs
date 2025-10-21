@@ -17,10 +17,11 @@ namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
         private readonly IVehicleService _vehicleService;
         private readonly IHubContext<VehicleHub> _hubContext;
 
-        public EditModel(IVehicleService vehicleService, IActivityLogService logService, IHubContext<VehicleHub> hubContext) : base(logService)
+        public EditModel(IVehicleService vehicleService, IActivityLogService logService, IHubContext<VehicleHub> hubContext, IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
         {
             _vehicleService = vehicleService;
             _hubContext = hubContext;
+            SetActivityLogHubContext(activityLogHubContext);
         }
 
         [BindProperty]

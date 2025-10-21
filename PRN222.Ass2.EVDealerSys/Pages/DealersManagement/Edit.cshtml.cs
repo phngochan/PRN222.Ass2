@@ -15,10 +15,11 @@ public class EditModel : BaseCrudPageModel
     private readonly IDealerService _dealerService;
     private readonly IHubContext<ManagementHub> _hubContext;
 
-    public EditModel(IActivityLogService logService, IDealerService dealerService, IHubContext<ManagementHub> hubContext) : base(logService)
+    public EditModel(IActivityLogService logService, IDealerService dealerService, IHubContext<ManagementHub> hubContext, IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
     {
         _dealerService = dealerService;
         _hubContext = hubContext;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     [BindProperty]
@@ -78,7 +79,7 @@ public class EditModel : BaseCrudPageModel
             SetSuccess("Cập nhật thông tin đại lý thành công!");
             await LogAsync("Edit Dealer", $"ID={ViewModel.Id}");
 
-            // Send SignalR notification
+            // Send SignalR notification for dealer update
             await _hubContext.Clients.All.SendAsync("ReceiveDealerUpdated", new
             {
                 id = ViewModel.Id,
