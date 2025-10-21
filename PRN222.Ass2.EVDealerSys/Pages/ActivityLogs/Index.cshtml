@@ -180,15 +180,15 @@
 </div>
 
 @section Scripts {
+    <script src="~/lib/signalr/signalr.min.js"></script>
+    <script src="~/js/activityLog-signalr.js"></script>
     <script>
         // Auto-hide alerts after 5 seconds
         setTimeout(function () {
             $('.alert').fadeOut('slow');
         }, 5000);
 
-        // Auto-refresh every 30 seconds (optional)
-        // setTimeout(function () {
-        //     location.reload();
-        // }, 30000);
+        // SignalR is now handling real-time updates
+        console.log("ActivityLog page loaded with SignalR support");
     </script>
 }

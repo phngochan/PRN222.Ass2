@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.SignalR;
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.Helpers;
-using PRN222.Ass2.EVDealerSys.Models.CustomerManagement;
 using PRN222.Ass2.EVDealerSys.Hubs;
+using PRN222.Ass2.EVDealerSys.Models.CustomerManagement;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.CustomerManagement
 {
@@ -15,13 +15,15 @@ namespace PRN222.Ass2.EVDealerSys.Pages.CustomerManagement
     {
         private readonly ICustomerService _customerService;
         private readonly IDealerService _dealerService;
-        private readonly IHubContext<ManagementHub> _hubContext;
+        private readonly IHubContext<ManagementHub> _managementHubContext;
 
-        public CreateModel(IActivityLogService logService, ICustomerService customerService, IDealerService dealerService, IHubContext<ManagementHub> hubContext) : base(logService)
+        public CreateModel(IActivityLogService logService, ICustomerService customerService, IDealerService dealerService, IHubContext<ManagementHub> managementHubContext, IHubContext<ActivityLogHub> activityLogHubContext)
+            : base(logService)
         {
             _customerService = customerService;
             _dealerService = dealerService;
-            _hubContext = hubContext;
+            _managementHubContext = managementHubContext;
+            SetActivityLogHubContext(activityLogHubContext);
         }
         [BindProperty]
         public CreateCustomerViewModel ViewModel { get; set; } = new();
@@ -66,16 +68,16 @@ namespace PRN222.Ass2.EVDealerSys.Pages.CustomerManagement
 
                 SetSuccess("Thêm thông tin khách hàng thành công!");
                 await LogAsync("Create Customer", $"Tạo khách hàng: {ViewModel.Name} ({ViewModel.Email})");
-                
-                // Send SignalR notification
-                await _hubContext.Clients.All.SendAsync("ReceiveCustomerCreated", new
+
+                // Send SignalR notification for customer creation
+                await _managementHubContext.Clients.All.SendAsync("ReceiveCustomerCreated", new
                 {
                     name = ViewModel.Name,
                     email = ViewModel.Email,
                     phone = ViewModel.Phone,
                     address = ViewModel.Address
                 });
-                
+
                 return RedirectToPage(nameof(Index));
             }
             catch (Exception)

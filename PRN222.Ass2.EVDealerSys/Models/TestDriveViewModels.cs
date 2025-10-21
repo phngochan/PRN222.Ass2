@@ -41,7 +41,7 @@ namespace PRN222.Ass2.EVDealerSys.Models
         public int? CustomerId { get; set; }
         public int? DealerId { get; set; }
         public int? UserId { get; set; }
-        public int Status { get; set; } = 1; // Default: Pending
+        public int Status { get; set; } = 2; // Default: Confirmed (skip Pending status)
 
         // Display properties
         public string? VehicleName { get; set; }

@@ -3,9 +3,11 @@ using EVDealerSys.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
+using PRN222.Ass2.EVDealerSys.Hubs;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
 {
@@ -14,9 +16,10 @@ namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
     {
         private readonly IVehicleService _vehicleService;
 
-        public IndexModel(IVehicleService vehicleService, IActivityLogService logService) : base(logService)
+        public IndexModel(IVehicleService vehicleService, IActivityLogService logService, IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
         {
             _vehicleService = vehicleService;
+            SetActivityLogHubContext(activityLogHubContext);
         }
 
         public VehiclesManagementViewModel ViewModel { get; set; } = new();
