@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.Allocation;
 
-[Authorize(Roles = "2")]
+[Authorize(Roles = "1")] // Admin only
 public class MyRequestsModel : PageModel
 {
     private readonly IAllocationService _allocationService;
