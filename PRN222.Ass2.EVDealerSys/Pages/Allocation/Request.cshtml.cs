@@ -10,7 +10,7 @@ using System.Security.Claims;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.Allocation;
 
-[Authorize(Roles = "1")] // Admin only
+//[Authorize(Roles = "2")] // Manager only
 public class RequestModel : PageModel
 {
     private readonly IAllocationService _allocationService;
@@ -20,7 +20,7 @@ public class RequestModel : PageModel
     public AllocationRequestDto Input { get; set; } = new();
 
     public List<Vehicle> Vehicles { get; set; } = new();
-
+    
     public RequestModel(IAllocationService allocationService, IVehicleService vehicleService)
     {
         _allocationService = allocationService;

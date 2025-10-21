@@ -11,36 +11,62 @@ public class AllocationService : IAllocationService
     private readonly IVehicleAllocationRepository _allocationRepo;
     private readonly IInventoryRepository _inventoryRepo;
     private readonly IVehicleRepository _vehicleRepo;
+    private readonly IDealerRepository _dealerRepo;
+    private readonly IUserRepository _userRepo;
 
     public AllocationService(
         IVehicleAllocationRepository allocationRepo,
         IInventoryRepository inventoryRepo,
-        IVehicleRepository vehicleRepo)
+        IVehicleRepository vehicleRepo,
+        IDealerRepository dealerRepo,
+        IUserRepository userRepo)
     {
         _allocationRepo = allocationRepo;
         _inventoryRepo = inventoryRepo;
         _vehicleRepo = vehicleRepo;
+        _dealerRepo = dealerRepo;
+        _userRepo = userRepo;
     }
 
     public async Task<(bool Success, string Message, VehicleAllocation? Allocation)> CreateRequestAsync(AllocationRequestDto dto)
     {
         try
         {
-            // Validate
+            // Validate basic fields
+            if (dto.VehicleId <= 0)
+                return (false, "Vehicle ID không hợp lệ", null);
+
+            if (dto.ToDealerId <= 0)
+                return (false, "Dealer ID không hợp lệ", null);
+
+            if (dto.RequestedByUserId <= 0)
+                return (false, "User ID không hợp lệ", null);
+
             if (dto.Quantity <= 0)
                 return (false, "Số lượng phải lớn hơn 0", null);
 
-            if (dto.DesiredDeliveryDate < DateTime.Now)
+            if (dto.DesiredDeliveryDate < DateTime.Now.Date)
                 return (false, "Thời hạn giao hàng phải trong tương lai", null);
 
-            // Check vehicle exists
+            // Verify vehicle exists
             var vehicle = await _vehicleRepo.GetByIdAsync(dto.VehicleId);
             if (vehicle == null)
-                return (false, "Xe không tồn tại", null);
+                return (false, $"Không tìm thấy xe có ID = {dto.VehicleId}", null);
+
+            // Verify dealer exists
+            var dealer = await _dealerRepo.GetByIdAsync(dto.ToDealerId);
+            if (dealer == null)
+                return (false, $"Không tìm thấy đại lý có ID = {dto.ToDealerId}", null);
+
+            // Verify user exists
+            var user = await _userRepo.GetByIdAsync(dto.RequestedByUserId);
+            if (user == null)
+                return (false, $"Không tìm thấy user có ID = {dto.RequestedByUserId}", null);
 
             // Check stock availability
             var (availableStock, isSufficient) = await CheckStockAvailabilityAsync(dto.VehicleId, dto.Quantity, dto.RequestedColor);
 
+            // Create allocation entity - KHÔNG set navigation properties
             var allocation = new VehicleAllocation
             {
                 VehicleId = dto.VehicleId,
@@ -48,11 +74,12 @@ public class AllocationService : IAllocationService
                 Quantity = dto.Quantity,
                 RequestedColor = dto.RequestedColor,
                 DesiredDeliveryDate = dto.DesiredDeliveryDate,
-                Reason = dto.ReasonText,
+                Reason = dto.ReasonText ?? string.Empty,
                 RequestDate = DateTime.Now,
                 Status = (int)AllocationStatus.Pending,
                 RequestedByUserId = dto.RequestedByUserId,
-                FromLocationType = 1 // EVM Factory
+                FromLocationType = 1, // EVM Factory
+                // KHÔNG set Vehicle, ToDealer, RequestedByUser để tránh EF tracking issues
             };
 
             var created = await _allocationRepo.CreateAsync(allocation);
@@ -65,7 +92,9 @@ public class AllocationService : IAllocationService
         }
         catch (Exception ex)
         {
-            return (false, $"Lỗi: {ex.Message}", null);
+            // Log chi tiết inner exception
+            var innerMsg = ex.InnerException?.Message ?? ex.Message;
+            return (false, $"Lỗi: {innerMsg}", null);
         }
     }
 
@@ -113,7 +142,7 @@ public class AllocationService : IAllocationService
         }
         catch (Exception ex)
         {
-            return (false, $"Lỗi: {ex.Message}");
+            return (false, $"Lỗi: {ex.InnerException?.Message ?? ex.Message}");
         }
     }
 
@@ -138,7 +167,7 @@ public class AllocationService : IAllocationService
         }
         catch (Exception ex)
         {
-            return (false, $"Lỗi: {ex.Message}");
+            return (false, $"Lỗi: {ex.InnerException?.Message ?? ex.Message}");
         }
     }
 
@@ -153,14 +182,14 @@ public class AllocationService : IAllocationService
             if (allocation.Status != (int)AllocationStatus.Approved)
                 return (false, "Yêu cầu chưa được phê duyệt");
 
-            // Reduce EVM stock - FIX: Không dùng await với GetEvmStock vì nó sync
+            // Reduce EVM stock
             var evmStock = _inventoryRepo.GetEvmStock(allocation.VehicleId ?? 0);
             if (evmStock == null || evmStock.Quantity < allocation.Quantity)
                 return (false, "Không đủ hàng trong kho");
 
             evmStock.Quantity -= allocation.Quantity ?? 0;
             _inventoryRepo.Update(evmStock);
-            await _inventoryRepo.SaveAsync(); // Save changes
+            await _inventoryRepo.SaveAsync();
 
             // Update status
             allocation.Status = (int)AllocationStatus.InTransit;
@@ -172,21 +201,28 @@ public class AllocationService : IAllocationService
         }
         catch (Exception ex)
         {
-            return (false, $"Lỗi: {ex.Message}");
+            return (false, $"Lỗi: {ex.InnerException?.Message ?? ex.Message}");
         }
     }
 
     public async Task<(bool Success, string Message)> UpdateShipmentStatusAsync(int allocationId, DateTime shipmentDate)
     {
-        var allocation = await _allocationRepo.GetByIdAsync(allocationId);
-        if (allocation == null)
-            return (false, "Không tìm thấy yêu cầu");
+        try
+        {
+            var allocation = await _allocationRepo.GetByIdAsync(allocationId);
+            if (allocation == null)
+                return (false, "Không tìm thấy yêu cầu");
 
-        allocation.Status = (int)AllocationStatus.InTransit;
-        allocation.ShipmentDate = shipmentDate;
-        await _allocationRepo.UpdateAsync(allocation);
+            allocation.Status = (int)AllocationStatus.InTransit;
+            allocation.ShipmentDate = shipmentDate;
+            await _allocationRepo.UpdateAsync(allocation);
 
-        return (true, "Cập nhật trạng thái vận chuyển thành công");
+            return (true, "Cập nhật trạng thái vận chuyển thành công");
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Lỗi: {ex.InnerException?.Message ?? ex.Message}");
+        }
     }
 
     public async Task<(bool Success, string Message)> UpdateDeliveryStatusAsync(int allocationId, DateTime deliveryDate)
@@ -197,7 +233,7 @@ public class AllocationService : IAllocationService
             if (allocation == null)
                 return (false, "Không tìm thấy yêu cầu");
 
-            // Add to dealer inventory - FIX: Sử dụng giá trị số thay vì enum
+            // Add to dealer inventory
             var dealerStock = _inventoryRepo.GetByVehicle(
                 allocation.VehicleId ?? 0, 
                 3, // DealerStock = 3
@@ -209,7 +245,7 @@ public class AllocationService : IAllocationService
                 {
                     VehicleId = allocation.VehicleId,
                     DealerId = allocation.ToDealerId,
-                    LocationType = 3, // DealerStock
+                    LocationType = 3,
                     Quantity = allocation.Quantity ?? 0
                 };
                 _inventoryRepo.PrepareCreate(dealerStock);
@@ -230,7 +266,7 @@ public class AllocationService : IAllocationService
         }
         catch (Exception ex)
         {
-            return (false, $"Lỗi: {ex.Message}");
+            return (false, $"Lỗi: {ex.InnerException?.Message ?? ex.Message}");
         }
     }
 
