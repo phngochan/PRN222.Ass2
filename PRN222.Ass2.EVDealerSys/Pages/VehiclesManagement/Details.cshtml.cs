@@ -2,9 +2,11 @@ using EVDealerSys.Models;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
+using PRN222.Ass2.EVDealerSys.Hubs;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
 {
@@ -13,9 +15,10 @@ namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
     {
         private readonly IVehicleService _vehicleService;
 
-        public DetailsModel(IVehicleService vehicleService, IActivityLogService logService) : base(logService)
+        public DetailsModel(IVehicleService vehicleService, IActivityLogService logService, IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
         {
             _vehicleService = vehicleService;
+            SetActivityLogHubContext(activityLogHubContext);
         }
 
         public VehicleDetailsViewModel Vehicle { get; set; } = new();

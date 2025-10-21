@@ -15,10 +15,11 @@ public class CreateModel : BaseCrudPageModel
     private readonly IDealerService _dealerService;
     private readonly IHubContext<ManagementHub> _hubContext;
 
-    public CreateModel(IActivityLogService logService, IDealerService dealerService, IHubContext<ManagementHub> hubContext) : base(logService)
+    public CreateModel(IActivityLogService logService, IDealerService dealerService, IHubContext<ManagementHub> hubContext, IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
     {
         _dealerService = dealerService;
         _hubContext = hubContext;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     [BindProperty]
@@ -43,7 +44,7 @@ public class CreateModel : BaseCrudPageModel
             SetSuccess("Thêm thông tin đại lý thành công!");
             await LogAsync("Create Dealer", $"Tạo đại lý: {ViewModel.Name} ({ViewModel.Address})");
 
-            // Send SignalR notification
+            // Send SignalR notification for dealer creation
             await _hubContext.Clients.All.SendAsync("ReceiveDealerCreated", new
             {
                 id = dealerCreated.Id,

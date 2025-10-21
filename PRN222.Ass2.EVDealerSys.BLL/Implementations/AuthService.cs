@@ -1,16 +1,14 @@
-using Microsoft.Extensions.Configuration;
+using System.Security.Cryptography;
+using System.Text;
 
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace PRN222.Ass2.EVDealerSys.BLL.Implementations;
 
-public class AuthService(IConfiguration configuration, IUserRepository userRepo) : IAuthService
+public class AuthService(IUserRepository userRepo) : IAuthService
 {
-    private readonly IConfiguration _configuration = configuration;
     private readonly IUserRepository _userRepo = userRepo;
 
     public async Task<User?> AuthenticateAsync(string email, string password)
@@ -22,7 +20,7 @@ public class AuthService(IConfiguration configuration, IUserRepository userRepo)
         // Get user by email
         var users = await _userRepo.GetAllAsync();
         var user = users.FirstOrDefault(u => u.Email == email);
-        
+
         if (user == null)
             return null;
 

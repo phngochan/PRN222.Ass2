@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.Helpers;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.DealersManagement;
@@ -13,9 +15,10 @@ public class DetailsModel : BaseCrudPageModel
 {
     private readonly IDealerService _dealerService;
 
-    public DetailsModel(IActivityLogService logService, IDealerService dealerService) : base(logService)
+    public DetailsModel(IActivityLogService logService, IDealerService dealerService, IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
     {
         _dealerService = dealerService;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     public DealerDetailsViewModel ViewModel { get; set; } = new();
