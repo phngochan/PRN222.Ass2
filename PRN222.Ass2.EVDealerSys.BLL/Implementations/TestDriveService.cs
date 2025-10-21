@@ -45,7 +45,7 @@ public class TestDriveService(ITestDriveRepository testDriveRepo, ICustomerServi
         return new TestDriveDashboardDto
         {
             TodayTestDrivesCount = todayTestDrives.Count,
-            PendingTestDrives = allTestDrives.Count(t => t.Status == 1),
+            PendingTestDrives = allTestDrives.Count(t => t.Status == 2), // Changed to show Confirmed instead of Pending
             CompletedTestDrives = allTestDrives.Count(t => t.Status == 3),
             TotalTestDrives = allTestDrives.Count(),
             UpcomingTestDrives = upcomingTestDrives.Select(MapToItemDto).ToList(),
@@ -104,7 +104,7 @@ public class TestDriveService(ITestDriveRepository testDriveRepo, ICustomerServi
                 ScheduledDate = dto.ScheduledDate,
                 StartTime = DateTime.Today.Add(dto.StartTime),
                 EndTime = DateTime.Today.Add(dto.EndTime),
-                Status = dto.Status == 0 ? 1 : dto.Status, // Default to Pending if not set
+                Status = dto.Status == 0 ? 2 : dto.Status, // Default to Confirmed (2) instead of Pending (1)
                 Notes = dto.Notes?.Trim(),
                 CustomerName = dto.CustomerName?.Trim(),
                 CustomerPhone = dto.CustomerPhone?.Trim(),
@@ -137,6 +137,7 @@ public class TestDriveService(ITestDriveRepository testDriveRepo, ICustomerServi
             existingTestDrive.CustomerName = dto.CustomerName?.Trim();
             existingTestDrive.CustomerPhone = dto.CustomerPhone?.Trim();
             existingTestDrive.CustomerEmail = dto.CustomerEmail?.Trim();
+            existingTestDrive.UpdatedAt = DateTime.Now;
 
             return await _testDriveRepo.UpdateAsync(existingTestDrive);
         }
@@ -212,6 +213,17 @@ public class TestDriveService(ITestDriveRepository testDriveRepo, ICustomerServi
         // Only allow marking as No Show if previously Confirmed (Status = 2)
         if (testDrive.Status != 2)
             return false;
+
+        // Only allow marking as No Show after the test drive end time has passed
+        if (testDrive.ScheduledDate.HasValue && testDrive.EndTime.HasValue)
+        {
+            var testDriveEndDateTime = testDrive.ScheduledDate.Value.Date.Add(testDrive.EndTime.Value.TimeOfDay);
+            if (DateTime.Now <= testDriveEndDateTime)
+            {
+                // Cannot mark as No Show before test drive ends
+                return false;
+            }
+        }
 
         // Update status to No Show
         testDrive.Status = 6;
