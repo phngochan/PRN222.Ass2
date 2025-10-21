@@ -6,7 +6,7 @@ using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.Hubs;
 
-namespace PRN222.Ass2.EVDealerSys.Pages.Order
+namespace PRN222.Ass2.EVDealerSys.Pages.Orders
 {
     public class IndexModel : PageModel
     {
@@ -105,7 +105,7 @@ namespace PRN222.Ass2.EVDealerSys.Pages.Order
         {
             try
             {
-                _orderService.EditOrder(OrderId, VehicleId, Quantity); 
+                _orderService.EditOrder(OrderId, VehicleId, Quantity);
                 TempData["Message"] = "Cập nhật đơn hàng thành công!";
 
                 var updatedOrder = _orderService.GetOrdersByDealer(1).FirstOrDefault(o => o.Id == OrderId);
