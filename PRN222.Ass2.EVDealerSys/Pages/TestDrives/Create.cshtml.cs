@@ -1,34 +1,37 @@
 using System.Globalization;
-using System.Linq;
 using System.Security.Claims;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 
+using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.TestDrive;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.TestDrives;
 
-public class CreateModel : PageModel
+public class CreateModel : BaseCrudPageModel
 {
     private readonly ITestDriveService _testDriveService;
     private readonly IVehicleService _vehicleService;
     private readonly ICustomerService _customerService;
     private readonly ILogger<CreateModel> _logger;
 
-    public CreateModel(
+    public CreateModel(IActivityLogService logService,
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
         ICustomerService customerService,
-        ILogger<CreateModel> logger)
+        ILogger<CreateModel> logger, IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;
         _customerService = customerService;
         _logger = logger;
+
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     [BindProperty]
@@ -40,6 +43,7 @@ public class CreateModel : PageModel
     {
         await LoadVehiclesAsync();
         EnsureDefaultValues();
+        await LogAsync("Open Create Test Drive", "User opened test drive creation form");
         return Page();
     }
 
@@ -132,17 +136,21 @@ public class CreateModel : PageModel
         try
         {
             await _testDriveService.CreateAsync(dto);
+            await LogAsync("Create Test Drive", $"Created test drive for {dto.CustomerName} ({dto.CustomerEmail}), Vehicle ID={dto.VehicleId}, Date={dto.ScheduledDate:yyyy-MM-dd}");
             TempData["SuccessMessage"] = "Đặt lịch thử xe thành công.";
+
             return RedirectToPage("./Index");
         }
         catch (ApplicationException ex)
         {
             _logger.LogWarning(ex, "Invalid data while creating test drive booking");
+            await LogAsync("Error", $"Invalid test drive data: {ex.Message}");
             ModelState.AddModelError(string.Empty, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error when creating test drive booking");
+            await LogAsync("Error", $"Failed to create test drive: {ex.Message}");
             ModelState.AddModelError(string.Empty, "Có lỗi xảy ra khi đặt lịch thử xe.");
         }
 
@@ -291,7 +299,7 @@ public class CreateModel : PageModel
             {
                 var nextHour = DateTime.Now.AddHours(1);
                 Form.StartTime = new TimeSpan(nextHour.Hour, 0, 0);
-                
+
                 // Đảm bảo không vượt quá giờ làm việc
                 if (Form.StartTime.Hours >= 18)
                 {

@@ -5,27 +5,33 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 
+using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.TestDrive;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.TestDrives;
 
-public class IndexModel : PageModel
+public class IndexModel : BaseCrudPageModel
 {
     private readonly ITestDriveService _testDriveService;
     private readonly IVehicleService _vehicleService;
     private readonly ILogger<IndexModel> _logger;
 
     public IndexModel(
+        IActivityLogService logService,
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
-        ILogger<IndexModel> logger)
+        ILogger<IndexModel> logger,
+        IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;
         _logger = logger;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     [BindProperty(SupportsGet = true)]
@@ -48,6 +54,7 @@ public class IndexModel : PageModel
     {
         await LoadVehiclesAsync();
         await LoadTestDrivesAsync();
+        await LogAsync("View Test Drives List", $"SearchTerm={SearchTerm}, FilterStatus={FilterStatus}, FilterVehicle={FilterVehicle}");
     }
 
     public async Task<IActionResult> OnPostUpdateStatusAsync(int id, int status)
@@ -58,6 +65,19 @@ public class IndexModel : PageModel
             
             if (updated)
             {
+                var statusName = status switch
+                {
+                    1 => "Chờ xác nhận",
+                    2 => "Đã xác nhận",
+                    3 => "Hoàn thành",
+                    4 => "Đã hủy",
+                    5 => "Khách hàng hủy",
+                    6 => "Không đến",
+                    _ => "Unknown"
+                };
+                
+                await LogAsync("Update Test Drive Status", $"Updated Test Drive ID={id} to Status={statusName}");
+                
                 TempData["SuccessMessage"] = status switch
                 {
                     1 => "Cập nhật trạng thái thành chờ xác nhận.",
@@ -79,6 +99,7 @@ public class IndexModel : PageModel
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to update test drive status for id {Id}", id);
+            await LogAsync("Error", $"Failed to update test drive status: {ex.Message}");
             TempData["ErrorMessage"] = "Có lỗi xảy ra khi cập nhật trạng thái.";
         }
 

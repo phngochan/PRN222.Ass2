@@ -140,10 +140,5 @@ namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
                 new SelectListItem { Value = "4", Text = "Đặt trước" }
             };
         }
-
-        private bool HasRole(int role)
-        {
-            return Request.Cookies["UserRole"] == role.ToString();
-        }
     }
 }

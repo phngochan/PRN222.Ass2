@@ -68,7 +68,7 @@ namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
             }
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(int id)
         {
             try
             {
