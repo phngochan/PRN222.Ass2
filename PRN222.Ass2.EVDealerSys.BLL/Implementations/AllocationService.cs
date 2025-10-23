@@ -67,7 +67,7 @@ public class AllocationService : IAllocationService
             // Check stock availability
             var (availableStock, isSufficient) = await CheckStockAvailabilityAsync(dto.VehicleId, dto.Quantity, dto.RequestedColor);
 
-            // Create allocation entity - KHÔNG set navigation properties
+
             var allocation = new VehicleAllocation
             {
                 VehicleId = dto.VehicleId,
@@ -77,7 +77,7 @@ public class AllocationService : IAllocationService
                 DesiredDeliveryDate = dto.DesiredDeliveryDate,
                 Reason = dto.ReasonText ?? string.Empty,
                 RequestDate = DateTime.Now,
-                Status = (int)AllocationStatus.PendingManagerReview, // FIX: Đổi từ Pending thành PendingManagerReview
+                Status = (int)AllocationStatus.PendingManagerReview, 
                 RequestedByUserId = dto.RequestedByUserId,
                 FromLocationType = 1, // EVM Factory
             };
@@ -92,7 +92,7 @@ public class AllocationService : IAllocationService
         }
         catch (Exception ex)
         {
-            // Log chi tiết inner exception
+
             var innerMsg = ex.InnerException?.Message ?? ex.Message;
             return (false, $"Lỗi: {innerMsg}", null);
         }
@@ -103,7 +103,6 @@ public class AllocationService : IAllocationService
     {
         try
         {
-            // Validate
             if (dto.VehicleId <= 0) return (false, "Vehicle ID không hợp lệ", null);
             if (dto.ToDealerId <= 0) return (false, "Dealer ID không hợp lệ", null);
             if (dto.RequestedByUserId <= 0) return (false, "User ID không hợp lệ", null);
@@ -111,7 +110,7 @@ public class AllocationService : IAllocationService
             if (dto.DesiredDeliveryDate < DateTime.Now.Date) 
                 return (false, "Thời hạn giao hàng phải trong tương lai", null);
 
-            // Verify entities
+
             var vehicle = await _vehicleRepo.GetByIdAsync(dto.VehicleId);
             if (vehicle == null) return (false, $"Không tìm thấy xe có ID = {dto.VehicleId}", null);
 
@@ -122,7 +121,7 @@ public class AllocationService : IAllocationService
             if (user == null || user.Role != 3) 
                 return (false, "User không hợp lệ hoặc không phải Role 3", null);
 
-            // Create allocation with PendingManagerReview status
+
             var allocation = new VehicleAllocation
             {
                 VehicleId = dto.VehicleId,
@@ -178,7 +177,7 @@ public class AllocationService : IAllocationService
             if (manager == null || manager.Role != 2)
                 return (false, "Manager không hợp lệ");
 
-            // Update status to pending EVM approval
+
             allocation.Status = (int)AllocationStatus.PendingEVMApproval;
             allocation.ReviewedByUserId = managerId;
             allocation.ReviewDate = DateTime.Now;
@@ -304,7 +303,6 @@ public class AllocationService : IAllocationService
         return allocations.Select(MapToDto);
     }
 
-    // Legacy method - Deprecated: Sử dụng EVMApproveRequestAsync thay thế
     public async Task<(bool Success, string Message)> ApproveRequestAsync(int allocationId, int approvedByUserId, string? notes, string? suggestion)
     {
         try
@@ -343,7 +341,6 @@ public class AllocationService : IAllocationService
         }
     }
 
-    // Legacy method - Deprecated: Sử dụng ManagerRejectAsync hoặc EVMRejectRequestAsync thay thế
     public async Task<(bool Success, string Message)> RejectRequestAsync(int allocationId, int rejectedByUserId, string reason)
     {
         try
@@ -433,7 +430,6 @@ public class AllocationService : IAllocationService
             if (allocation == null)
                 return (false, "Không tìm thấy yêu cầu");
 
-            // Add to dealer inventory
             var dealerStock = _inventoryRepo.GetByVehicle(
                 allocation.VehicleId ?? 0, 
                 3, // DealerStock = 3
@@ -537,8 +533,6 @@ public class AllocationService : IAllocationService
         
         var allocations = await _allocationRepo.GetByDealerIdAsync(dealerId);
         
-        // Lọc chỉ lấy các yêu cầu đã được Manager xét duyệt (ReviewedByUserId != null)
-        // và đã chuyển lên EVM (Status >= 1)
         return allocations
             .Where(a => a.ReviewedByUserId != null && a.Status >= 1)
             .Select(MapToDto)
