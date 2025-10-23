@@ -1,20 +1,27 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.SignalR;
 
+using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.UsersManagement;
 
 [Authorize(Roles = "1,2")]
-public class DetailsModel : PageModel
+public class DetailsModel : BaseCrudPageModel
 {
     private readonly IUserService _userService;
 
-    public DetailsModel(IUserService userService)
+    public DetailsModel(
+        IUserService userService,
+        IActivityLogService activityLogService,
+        IHubContext<ActivityLogHub> activityLogHubContext)
+        : base(activityLogService)
     {
         _userService = userService;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     public UserItemViewModel ViewModel { get; set; } = new();
@@ -36,6 +43,7 @@ public class DetailsModel : PageModel
             DealerId = user.DealerId,
             DealerName = user.Dealer?.Name
         };
+        await LogAsync("View User Details", $"Viewed details for user: {user.Name} (ID={user.Id})");
         return Page();
     }
 }

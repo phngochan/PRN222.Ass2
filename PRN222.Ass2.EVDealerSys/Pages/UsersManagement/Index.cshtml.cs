@@ -2,23 +2,31 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 
+using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.UsersManagement;
 
 [Authorize(Roles = "1,2")]
-public class IndexModel : PageModel
+public class IndexModel : BaseCrudPageModel
 {
     private readonly IUserService _userService;
     private readonly IDealerService _dealerService;
 
-    public IndexModel(IUserService userService, IDealerService dealerService)
+    public IndexModel(
+        IActivityLogService logService,
+        IUserService userService,
+        IDealerService dealerService,
+        IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
     {
         _userService = userService;
         _dealerService = dealerService;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     public UserListViewModel ViewModel { get; set; } = new();
@@ -61,6 +69,8 @@ public class IndexModel : PageModel
                 DealerName = u.Dealer?.Name
             }).ToList()
         };
+
+        await LogAsync("View Users List", $"SearchTerm={SearchTerm}, FilterRole={FilterRole}, FilterDealer={FilterDealer}");
 
         RoleOptions = GetRoleSelectList();
         DealerOptions = await GetDealerSelectList();

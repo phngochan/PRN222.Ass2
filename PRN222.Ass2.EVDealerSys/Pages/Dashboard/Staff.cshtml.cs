@@ -1,32 +1,42 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models.Dashboard;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.Dashboard
 {
-    public class StaffModel : BaseViewOnlyPageModel<StaffDashboardViewModel>
+    [Authorize(Roles = "3")]
+    public class StaffModel : BaseCrudPageModel
     {
         private readonly IOrderService _orderService;
 
-        public StaffModel(IOrderService orderService)
+        public StaffDashboardViewModel ViewModel { get; set; } = new();
+
+        public StaffModel(
+            IActivityLogService logService,
+            IOrderService orderService,
+            IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
         {
             _orderService = orderService;
+            SetActivityLogHubContext(activityLogHubContext);
         }
 
-        public override async Task OnGetAsync()
+        public async Task OnGetAsync()
         {
+            var userId = CurrentUserId ?? 0;
+            
             ViewModel = new StaffDashboardViewModel
             {
                 UserName = User.Identity?.Name ?? "Staff",
                 MyOrdersToday = await _orderService.GetOrdersCountByUserAndDateRangeAsync(
-                    GetUserId(), DateTime.Today, DateTime.Today.AddDays(1)
+                    userId, DateTime.Today, DateTime.Today.AddDays(1)
                 ),
             };
-        }
 
-        private int GetUserId()
-        {
-            return int.TryParse(User?.FindFirst("Id")?.Value, out var id) ? id : 0;
+            await LogAsync("View Staff Dashboard", "Staff accessed dashboard");
         }
     }
 }

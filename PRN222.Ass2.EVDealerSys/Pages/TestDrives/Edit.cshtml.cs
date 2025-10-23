@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
 
+using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.TestDrive;
 using PRN222.Ass2.EVDealerSys.Hubs;
@@ -14,7 +15,7 @@ using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.TestDrives;
 
-public class EditModel : PageModel
+public class EditModel : BaseCrudPageModel
 {
     private readonly ITestDriveService _testDriveService;
     private readonly IVehicleService _vehicleService;
@@ -22,15 +23,17 @@ public class EditModel : PageModel
     private readonly ILogger<EditModel> _logger;
 
     public EditModel(
+        IActivityLogService logService,
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
-        IHubContext<TestDriveHub> hubContext,
-        ILogger<EditModel> logger)
+        ILogger<EditModel> logger,
+        IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;
         _hubContext = hubContext;
         _logger = logger;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     [BindProperty]
@@ -53,6 +56,7 @@ public class EditModel : PageModel
             Form = MapToViewModel(dto);
             await LoadVehiclesAsync();
             LoadStatusOptions();
+            await LogAsync("Open Edit Test Drive", $"Editing Test Drive ID={id}");
             return Page();
         }
         catch (Exception ex)
@@ -156,36 +160,21 @@ public class EditModel : PageModel
         {
             var result = await _testDriveService.UpdateAsync(dto);
             _logger.LogInformation("UpdateAsync completed. Result: {ResultId}", result?.Id);
-            
-            // Send real-time notification via SignalR
-            await _hubContext.Clients.All.SendAsync("TestDriveUpdated", new
-            {
-                id = result.Id,
-                vehicleId = result.VehicleId,
-                customerId = result.CustomerId,
-                customerName = dto.CustomerName,
-                scheduledDate = dto.ScheduledDate.ToString("dd/MM/yyyy"),
-                startTime = dto.StartTime.ToString(@"hh\:mm"),
-                endTime = dto.EndTime.ToString(@"hh\:mm"),
-                status = result.Status,
-                statusName = GetStatusName(result.Status ?? 2),
-                timestamp = DateTime.Now
-            });
-            
-            _logger.LogInformation("Test drive updated and SignalR notification sent: {Id}", result.Id);
-            
+            await LogAsync("Update Test Drive", $"Updated Test Drive ID={dto.Id}, Vehicle ID={dto.VehicleId}, Date={dto.ScheduledDate:yyyy-MM-dd}");
             TempData["SuccessMessage"] = "Cập nhật lịch thử xe thành công.";
             return RedirectToPage("./Index");
         }
         catch (ApplicationException ex)
         {
             _logger.LogWarning(ex, "Validation failure when updating test drive {Id}", id);
+            await LogAsync("Error", $"Validation error updating test drive ID={id}: {ex.Message}");
             ModelState.AddModelError(string.Empty, ex.Message);
             return Page();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error when updating test drive {Id}", id);
+            await LogAsync("Error", $"Failed to update test drive ID={id}: {ex.Message}");
             ModelState.AddModelError(string.Empty, "Có lỗi xảy ra khi cập nhật lịch thử xe.");
             return Page();
         }

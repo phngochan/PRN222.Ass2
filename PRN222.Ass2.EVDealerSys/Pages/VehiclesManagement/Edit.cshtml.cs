@@ -1,13 +1,13 @@
 using EVDealerSys.Models;
-using Microsoft.AspNetCore.SignalR;
-using PRN222.Ass2.EVDealerSys.Hubs;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
+using PRN222.Ass2.EVDealerSys.Hubs;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
 {
@@ -74,7 +74,7 @@ namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
             }
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(int id)
         {
             if (!ModelState.IsValid)
             {

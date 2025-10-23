@@ -2,22 +2,30 @@ using System;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.SignalR;
 
+using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.TestDrive;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.TestDrives;
 
-public class DetailsModel : PageModel
+public class DetailsModel : BaseCrudPageModel
 {
     private readonly ITestDriveService _testDriveService;
     private readonly ILogger<DetailsModel> _logger;
 
-    public DetailsModel(ITestDriveService testDriveService, ILogger<DetailsModel> logger)
+    public DetailsModel(
+        IActivityLogService logService,
+        ITestDriveService testDriveService,
+        ILogger<DetailsModel> logger,
+        IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
     {
         _testDriveService = testDriveService;
         _logger = logger;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     public TestDriveViewModel TestDrive { get; private set; } = new();
@@ -34,11 +42,13 @@ public class DetailsModel : PageModel
             }
 
             TestDrive = MapToViewModel(dto);
+            await LogAsync("View Test Drive Details", $"Viewing Test Drive ID={id}");
             return Page();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to load test drive details for id {Id}", id);
+            await LogAsync("Error", $"Failed to load test drive details: {ex.Message}");
             TempData["ErrorMessage"] = "Không thể tải thông tin lịch thử xe.";
             return RedirectToPage("./Index");
         }

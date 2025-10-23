@@ -22,35 +22,35 @@
                     @if (Model.ViewModel.HasOrders)
                     {
                         <div class="alert alert-warning">
-                            <i class="fas fa-info-circle"></i> ViewModel.GetWarningMessage()
+                            <i class="fas fa-info-circle"></i> @Model.ViewModel.GetWarningMessage()
                         </div>
                     }
 
                     <div class="card mb-3">
                         <div class="card-body">
-                            <h5 class="card-title text-primary">ViewModel.Name</h5>
+                            <h5 class="card-title text-primary">@Model.ViewModel.Name</h5>
                             <div class="row">
                                 <div class="col-md-6">
                                     <p class="mb-1">
-                                        <strong>Email:</strong> ViewModel.Email
+                                        <strong>Email:</strong> @Model.ViewModel.Email
                                     </p>
                                     <p class="mb-1">
-                                        <strong>Số điện thoại:</strong> ViewModel.Phone
+                                        <strong>Số điện thoại:</strong> @Model.ViewModel.Phone
                                     </p>
                                 </div>
                                 <div class="col-md-6">
                                     <p class="mb-1">
-                                        <strong>Địa chỉ:</strong> ViewModel.Address
+                                        <strong>Địa chỉ:</strong> @Model.ViewModel.Address
                                     </p>
                                     <p class="mb-1">
-                                        <strong>Đại lý:</strong> ViewModel.DealerName
+                                        <strong>Đại lý:</strong> @Model.ViewModel.DealerName
                                     </p>
                                 </div>
                             </div>
                             <hr>
                             <p class="mb-0">
                                 <strong>Số đơn hàng:</strong>
-                                <span class="badge badge-primary">ViewModel.OrderCount</span>
+                                <span class="badge badge-primary">@Model.ViewModel.OrderCount</span>
                             </p>
                         </div>
                     </div>
