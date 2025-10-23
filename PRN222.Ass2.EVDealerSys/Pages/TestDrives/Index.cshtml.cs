@@ -19,6 +19,7 @@ public class IndexModel : BaseCrudPageModel
 {
     private readonly ITestDriveService _testDriveService;
     private readonly IVehicleService _vehicleService;
+    private readonly IHubContext<TestDriveHub> _hubContext;
     private readonly ILogger<IndexModel> _logger;
 
     public IndexModel(
@@ -30,6 +31,7 @@ public class IndexModel : BaseCrudPageModel
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;
+        _hubContext = hubContext;
         _logger = logger;
         SetActivityLogHubContext(activityLogHubContext);
     }
@@ -61,6 +63,10 @@ public class IndexModel : BaseCrudPageModel
     {
         try
         {
+            // Get old status before update for notification
+            var testDrive = await _testDriveService.GetByIdAsync(id);
+            var oldStatus = testDrive?.Status ?? 0;
+            
             var updated = await _testDriveService.UpdateStatusAsync(id, status);
             
             if (updated)

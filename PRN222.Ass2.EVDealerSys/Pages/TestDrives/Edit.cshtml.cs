@@ -19,6 +19,7 @@ public class EditModel : BaseCrudPageModel
 {
     private readonly ITestDriveService _testDriveService;
     private readonly IVehicleService _vehicleService;
+    private readonly IHubContext<TestDriveHub> _hubContext;
     private readonly ILogger<EditModel> _logger;
 
     public EditModel(
@@ -30,6 +31,7 @@ public class EditModel : BaseCrudPageModel
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;
+        _hubContext = hubContext;
         _logger = logger;
         SetActivityLogHubContext(activityLogHubContext);
     }

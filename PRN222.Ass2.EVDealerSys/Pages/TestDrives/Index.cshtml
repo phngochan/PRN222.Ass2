@@ -265,9 +265,84 @@
 </div>
 
 @section Scripts {
+    <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
     <script>
         setTimeout(function () {
             $('.alert').fadeOut('slow');
         }, 5000);
+
+        // ========== SignalR Real-time Updates ==========
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/testDriveHub")
+            .withAutomaticReconnect()
+            .build();
+
+        // Listen for new test drive created
+        connection.on("TestDriveCreated", function (data) {
+            console.log("New test drive created:", data);
+            
+            // Show toast notification
+            showNotification('success', `Lịch thử xe mới: ${data.customerName} - ${data.vehicleName}`);
+            
+            // Auto-reload page to show new booking
+            setTimeout(() => location.reload(), 2000);
+        });
+
+        // Listen for test drive updated
+        connection.on("TestDriveUpdated", function (data) {
+            console.log("Test drive updated:", data);
+            
+            // Show toast notification
+            showNotification('info', `Lịch thử xe đã được cập nhật: ${data.customerName}`);
+            
+            // Auto-reload page to show changes
+            setTimeout(() => location.reload(), 2000);
+        });
+
+        // Listen for status changes
+        connection.on("TestDriveStatusChanged", function (data) {
+            console.log("Status changed:", data);
+            
+            // Show toast notification
+            showNotification('warning', `Trạng thái thay đổi: ${data.customerName} - ${data.statusName}`);
+            
+            // Auto-reload page to reflect status change
+            setTimeout(() => location.reload(), 2000);
+        });
+
+        // Start connection
+        connection.start()
+            .then(() => {
+                console.log("✅ Connected to TestDriveHub");
+            })
+            .catch(err => {
+                console.error("❌ SignalR connection error:", err);
+            });
+
+        // Show notification helper
+        function showNotification(type, message) {
+            const alertClass = type === 'success' ? 'alert-success' : 
+                             type === 'info' ? 'alert-info' : 
+                             type === 'warning' ? 'alert-warning' : 'alert-danger';
+            
+            const icon = type === 'success' ? 'fa-check-circle' : 
+                        type === 'info' ? 'fa-info-circle' : 
+                        type === 'warning' ? 'fa-exclamation-triangle' : 'fa-times-circle';
+            
+            const alertHtml = `
+                <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+                     style="top: 80px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+                    <i class="fas ${icon} me-2"></i>
+                    <strong>${message}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            $('body').append(alertHtml);
+            
+            setTimeout(() => {
+                $('.alert').fadeOut('slow', function() { $(this).remove(); });
+            }, 5000);
+        }
     </script>
 }
