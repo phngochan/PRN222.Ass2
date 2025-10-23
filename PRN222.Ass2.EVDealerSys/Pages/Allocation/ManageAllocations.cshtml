@@ -6,6 +6,18 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="fas fa-boxes"></i> Quản Lý Phân Bổ Xe</h2>
+    @if (User.IsInRole("2"))
+    {
+        <span class="badge bg-success">Manager View - Yêu Cầu Đã Gửi EVM</span>
+    }
+    else if (User.IsInRole("4"))
+    {
+        <span class="badge bg-info">EVM Staff View</span>
+    }
+    else if (User.IsInRole("1"))
+    {
+        <span class="badge bg-danger">Admin View</span>
+    }
 </div>
 
 <!-- Statistics -->
@@ -37,8 +49,8 @@
     <div class="col-md-3">
         <div class="card text-center bg-primary text-white">
             <div class="card-body">
-                <h3>@Model.AllRequests.Count(r => r.Status == 4)</h3>
-                <p class="mb-0">Đã giao</p>
+                <h3>@Model.AllRequests.Count(r => r.Status == 4 || r.Status == 5)</h3>
+                <p class="mb-0">Vận chuyển/Đã giao</p>
             </div>
         </div>
     </div>
@@ -52,11 +64,12 @@
                 <label class="form-label">Trạng thái</label>
                 <select name="statusFilter" class="form-select" asp-for="StatusFilter">
                     <option value="">Tất cả</option>
-                    <option value="0">Chờ duyệt</option>
-                    <option value="1">Đã duyệt</option>
-                    <option value="2">Từ chối</option>
-                    <option value="3">Đang vận chuyển</option>
-                    <option value="4">Đã giao</option>
+                    <option value="0">Chờ Manager xét duyệt</option>
+                    <option value="1">Chờ EVM phê duyệt</option>
+                    <option value="2">Đã phê duyệt</option>
+                    <option value="3">Từ chối</option>
+                    <option value="4">Đang vận chuyển</option>
+                    <option value="5">Đã giao</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -116,9 +129,10 @@
                                 }
                             </td>
                             <td>
-                                @if (request.Status == 1)
+                                @* Chỉ Role 4 (EVM Staff) mới có thể xuất kho và giao hàng *@
+                                @if (User.IsInRole("4"))
                                 {
-                                    <form method="post" asp-page-handler="Fulfill" class="d-inline">
+										<form method="post" asp-page-handler="Fulfill" class="d-inline">
                                         <input type="hidden" name="allocationId" value="@request.Id" />
                                         <button type="submit" class="btn btn-sm btn-primary" title="Xuất kho">
                                             <i class="fas fa-shipping-fast"></i> Xuất kho

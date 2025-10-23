@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.Allocation;
 
-[Authorize(Roles = "2")]
+[Authorize(Roles = "4")] // Role 4: EVM Staff
 public class PendingApprovalsModel : PageModel
 {
     private readonly IAllocationService _allocationService;
@@ -21,7 +21,9 @@ public class PendingApprovalsModel : PageModel
 
     public async Task OnGetAsync()
     {
-        PendingRequests = (await _allocationService.GetPendingRequestsAsync()).ToList();
+        // Lấy yêu cầu chờ EVM phê duyệt (Status = 1: PendingEVMApproval)
+        // Đây là các yêu cầu đã được Manager (Role 2) xét duyệt
+        PendingRequests = (await _allocationService.GetPendingEVMApprovalAsync()).ToList();
 
         // Check stock for each request
         foreach (var request in PendingRequests)
@@ -40,7 +42,8 @@ public class PendingApprovalsModel : PageModel
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
         
-        var (success, message) = await _allocationService.ApproveRequestAsync(allocationId, userId, notes, suggestion);
+        var (success, message) = await _allocationService.EVMApproveRequestAsync(
+            allocationId, userId, notes, suggestion);
 
         TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
         return RedirectToPage();
@@ -50,7 +53,8 @@ public class PendingApprovalsModel : PageModel
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
         
-        var (success, message) = await _allocationService.RejectRequestAsync(allocationId, userId, reason);
+        var (success, message) = await _allocationService.EVMRejectRequestAsync(
+            allocationId, userId, reason);
 
         TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
         return RedirectToPage();

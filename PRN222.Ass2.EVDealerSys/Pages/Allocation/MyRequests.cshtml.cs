@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.Allocation;
 
-[Authorize(Roles = "2")]
+[Authorize(Roles = "3")] // Role 3: Dealer Staff
 public class MyRequestsModel : PageModel
 {
     private readonly IAllocationService _allocationService;
@@ -27,9 +27,10 @@ public class MyRequestsModel : PageModel
 
     public async Task OnGetAsync()
     {
-        var dealerId = int.Parse(User.FindFirstValue("DealerId") ?? "0");
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
         
-        Requests = (await _allocationService.GetDealerRequestsAsync(dealerId)).ToList();
+        // Lấy yêu cầu theo userId của staff
+        Requests = (await _allocationService.GetStaffRequestsAsync(userId)).ToList();
 
         // Apply filters
         if (StatusFilter.HasValue)

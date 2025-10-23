@@ -13,19 +13,30 @@ public class AllocationRequestDto
     public string? ReasonText { get; set; }
     public int ToDealerId { get; set; }
     public string? DealerName { get; set; }
+    
+    // Role 3 info
     public int RequestedByUserId { get; set; }
     public string? RequestedByUserName { get; set; }
     public DateTime RequestDate { get; set; }
+    
+    // Role 2 review
+    public int? ReviewedByUserId { get; set; }
+    public string? ReviewedByUserName { get; set; }
+    public DateTime? ReviewDate { get; set; }
+    public string? ManagerNotes { get; set; }
+    
+    // Status
     public int Status { get; set; }
     public string? StatusText { get; set; }
     
-    // For approval
+    // Role 4 approval
     public int? ApprovedByUserId { get; set; }
+    public string? ApprovedByUserName { get; set; }
     public string? ApprovalNotes { get; set; }
     public string? StaffSuggestion { get; set; }
     public DateTime? AllocationDate { get; set; }
     
-    // For tracking
+    // Tracking
     public DateTime? ShipmentDate { get; set; }
     public DateTime? DeliveryDate { get; set; }
     

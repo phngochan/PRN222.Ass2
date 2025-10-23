@@ -1,0 +1,234 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.Allocation.ManagerForwardedRequestsModel
+@{
+    ViewData["Title"] = "Yêu Cầu Đã Gửi EVM";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="fas fa-paper-plane"></i> Yêu Cầu Đã Gửi Lên EVM</h2>
+            <p class="text-muted">Danh sách các yêu cầu bạn đã phê duyệt và chuyển lên EVM Staff</p>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center bg-info text-white">
+                <div class="card-body">
+                    <h3>@Model.ForwardedRequests.Count(r => r.Status == 1)</h3>
+                    <p class="mb-0">Chờ EVM Duyệt</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-success text-white">
+                <div class="card-body">
+                    <h3>@Model.ForwardedRequests.Count(r => r.Status == 2)</h3>
+                    <p class="mb-0">EVM Đã Duyệt</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-primary text-white">
+                <div class="card-body">
+                    <h3>@Model.ForwardedRequests.Count(r => r.Status == 4 || r.Status == 5)</h3>
+                    <p class="mb-0">Đang Giao/Đã Giao</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center bg-danger text-white">
+                <div class="card-body">
+                    <h3>@Model.ForwardedRequests.Count(r => r.Status == 3)</h3>
+                    <p class="mb-0">Bị Từ Chối</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="statusFilter" class="form-select" asp-for="StatusFilter">
+                        <option value="">Tất cả</option>
+                        <option value="1">Chờ EVM duyệt</option>
+                        <option value="2">EVM đã duyệt</option>
+                        <option value="3">Bị từ chối</option>
+                        <option value="4">Đang vận chuyển</option>
+                        <option value="5">Đã giao</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-filter"></i> Lọc
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Requests Table -->
+    @if (!Model.ForwardedRequests.Any())
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Chưa có yêu cầu nào được gửi lên EVM.
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Xe</th>
+                        <th>SL</th>
+                        <th>Staff Yêu Cầu</th>
+                        <th>Ngày Bạn Duyệt</th>
+                        <th>Trạng Thái EVM</th>
+                        <th>EVM Phê Duyệt</th>
+                        <th>Chi Tiết</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model.ForwardedRequests)
+                    {
+                        <tr>
+                            <td><strong>#@request.Id</strong></td>
+                            <td>@request.VehicleModel @request.VehicleVersion</td>
+                            <td><span class="badge bg-secondary">@request.Quantity</span></td>
+                            <td><small>@request.RequestedByUserName</small></td>
+                            <td><small>@request.ReviewDate?.ToString("dd/MM/yyyy HH:mm")</small></td>
+                            <td>
+                                @switch(request.Status)
+                                {
+                                    case 1: <span class="badge bg-info">Chờ EVM duyệt</span>; break;
+                                    case 2: <span class="badge bg-success">EVM đã duyệt</span>; break;
+                                    case 3: <span class="badge bg-danger">Bị từ chối</span>; break;
+                                    case 4: <span class="badge bg-primary">Đang vận chuyển</span>; break;
+                                    case 5: <span class="badge bg-dark">Đã giao</span>; break;
+                                }
+                            </td>
+                            <td>
+                                @if (request.ApprovedByUserId.HasValue)
+                                {
+                                    <small class="text-success">
+                                        <i class="fas fa-check-circle"></i> 
+                                        @request.AllocationDate?.ToString("dd/MM/yyyy")
+                                    </small>
+                                }
+                                else if (request.Status == 3)
+                                {
+                                    <small class="text-danger">
+                                        <i class="fas fa-times-circle"></i> Từ chối
+                                    </small>
+                                }
+                                else
+                                {
+                                    <small class="text-muted">Chưa xử lý</small>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#detailModal-@request.Id">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<!-- Detail Modals -->
+@foreach (var request in Model.ForwardedRequests)
+{
+    <div class="modal fade" id="detailModal-@request.Id" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Chi Tiết Yêu Cầu #@request.Id</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-info-circle"></i> Thông Tin Yêu Cầu</h6>
+                            <p><strong>Xe:</strong> @request.VehicleModel @request.VehicleVersion</p>
+                            <p><strong>Số lượng:</strong> @request.Quantity</p>
+                            <p><strong>Màu:</strong> @(request.RequestedColor ?? "Không yêu cầu")</p>
+                            <p><strong>Lý do:</strong> @request.ReasonText</p>
+                            <p><strong>Thời hạn:</strong> @request.DesiredDeliveryDate.ToString("dd/MM/yyyy")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-timeline"></i> Timeline</h6>
+                            <p><strong>1. Staff yêu cầu:</strong> @request.RequestedByUserName</p>
+                            <p class="ms-3"><small>@request.RequestDate.ToString("dd/MM/yyyy HH:mm")</small></p>
+                            
+                            <p><strong>2. Bạn đã duyệt:</strong></p>
+                            <p class="ms-3"><small>@request.ReviewDate?.ToString("dd/MM/yyyy HH:mm")</small></p>
+                            @if (!string.IsNullOrEmpty(request.ManagerNotes))
+                            {
+                                <div class="alert alert-info py-2 ms-3">
+                                    <strong>Ghi chú của bạn:</strong><br/>
+                                    @request.ManagerNotes
+                                </div>
+                            }
+                            
+                            @if (request.ApprovedByUserId.HasValue)
+                            {
+                                <p><strong>3. EVM đã xử lý:</strong></p>
+                                <p class="ms-3"><small>@request.AllocationDate?.ToString("dd/MM/yyyy HH:mm")</small></p>
+                                @if (!string.IsNullOrEmpty(request.ApprovalNotes))
+                                {
+                                    <div class="alert alert-warning py-2 ms-3">
+                                        <strong>Ghi chú EVM:</strong><br/>
+                                        @request.ApprovalNotes
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Role 2: Dealer Manager - 2 trang riêng biệt *@
+@if (User.IsInRole("2"))
+{
+    <li>
+        <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/ManagerReview">
+            <i class="fas fa-user-check"></i> Xét Duyệt YC Từ Staff
+        </a>
+    </li>
+    <li>
+        <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/ManagerForwardedRequests">
+            <i class="fas fa-paper-plane"></i> YC Đã Gửi Lên EVM
+        </a>
+    </li>
+}
+
+@* Role 4: EVM Staff - 2 trang riêng biệt *@
+@if (User.IsInRole("4"))
+{
+    <li>
+        <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/PendingApprovals">
+            <i class="fas fa-clipboard-check"></i> Phê Duyệt YC Từ Manager
+        </a>
+    </li>
+    <li>
+        <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/ManageAllocations">
+            <i class="fas fa-truck"></i> Quản Lý Tất Cả YC
+        </a>
+    </li>
+}
