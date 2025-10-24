@@ -1,12 +1,11 @@
 using System.Globalization;
-using System.Linq;
 using System.Security.Claims;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
 
+using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.TestDrive;
 using PRN222.Ass2.EVDealerSys.Hubs;
@@ -14,7 +13,7 @@ using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.TestDrives;
 
-public class CreateModel : PageModel
+public class CreateModel : BaseCrudPageModel
 {
     private readonly ITestDriveService _testDriveService;
     private readonly IVehicleService _vehicleService;
@@ -22,12 +21,11 @@ public class CreateModel : PageModel
     private readonly IHubContext<TestDriveHub> _hubContext;
     private readonly ILogger<CreateModel> _logger;
 
-    public CreateModel(
+    public CreateModel(IActivityLogService logService,
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
         ICustomerService customerService,
-        ILogger<CreateModel> logger, 
-        IHubContext<ActivityLogHub> activityLogHubContext,
+        ILogger<CreateModel> logger,
         IHubContext<TestDriveHub> hubContext) : base(logService)
     {
         _testDriveService = testDriveService;
@@ -138,7 +136,7 @@ public class CreateModel : PageModel
         try
         {
             var createdTestDrive = await _testDriveService.CreateAsync(dto);
-            
+
             // Send real-time notification via SignalR
             await _hubContext.Clients.All.SendAsync("TestDriveCreated", new
             {
@@ -152,9 +150,9 @@ public class CreateModel : PageModel
                 statusName = GetStatusName(createdTestDrive.Status ?? 2),
                 timestamp = DateTime.Now
             });
-            
+
             _logger.LogInformation("Test drive created and SignalR notification sent: {Id}", createdTestDrive.Id);
-            
+
             TempData["SuccessMessage"] = "Đặt lịch thử xe thành công.";
             return RedirectToPage("./Index");
         }
@@ -314,7 +312,7 @@ public class CreateModel : PageModel
             {
                 var nextHour = DateTime.Now.AddHours(1);
                 Form.StartTime = new TimeSpan(nextHour.Hour, 0, 0);
-                
+
                 // Đảm bảo không vượt quá giờ làm việc
                 if (Form.StartTime.Hours >= 18)
                 {
