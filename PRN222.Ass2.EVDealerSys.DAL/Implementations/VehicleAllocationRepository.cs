@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+
 using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 using PRN222.Ass2.EVDealerSys.DAL.Base;
 using PRN222.Ass2.EVDealerSys.DAL.Context;
@@ -16,6 +17,7 @@ public class VehicleAllocationRepository : GenericRepository<VehicleAllocation>,
             .Include(va => va.Vehicle)
             .Include(va => va.ToDealer)
             .Include(va => va.RequestedByUser)
+            .Include(va => va.ReviewedByUser)
             .Include(va => va.ApprovedByUser)
             .OrderByDescending(va => va.RequestDate)
             .ToListAsync();
@@ -27,6 +29,7 @@ public class VehicleAllocationRepository : GenericRepository<VehicleAllocation>,
             .Include(va => va.Vehicle)
             .Include(va => va.ToDealer)
             .Include(va => va.RequestedByUser)
+            .Include(va => va.ReviewedByUser)
             .Include(va => va.ApprovedByUser)
             .FirstOrDefaultAsync(va => va.Id == id);
     }
@@ -37,6 +40,7 @@ public class VehicleAllocationRepository : GenericRepository<VehicleAllocation>,
             .Include(va => va.Vehicle)
             .Include(va => va.ToDealer)
             .Include(va => va.RequestedByUser)
+            .Include(va => va.ReviewedByUser)
             .Where(va => va.ToDealerId == dealerId)
             .OrderByDescending(va => va.RequestDate)
             .ToListAsync();
@@ -48,6 +52,8 @@ public class VehicleAllocationRepository : GenericRepository<VehicleAllocation>,
             .Include(va => va.Vehicle)
             .Include(va => va.ToDealer)
             .Include(va => va.RequestedByUser)
+            .Include(va => va.ReviewedByUser)
+            .Include(va => va.ApprovedByUser)
             .Where(va => va.Status == status)
             .OrderByDescending(va => va.RequestDate)
             .ToListAsync();
@@ -77,5 +83,29 @@ public class VehicleAllocationRepository : GenericRepository<VehicleAllocation>,
     {
         var availableStock = await GetAvailableStockAsync(vehicleId, color);
         return availableStock >= quantity;
+    }
+
+    // NEW: Implement các phương thức mới
+    public async Task<IEnumerable<VehicleAllocation>> GetByUserIdAsync(int userId)
+    {
+        return await _context.VehicleAllocations
+            .Include(va => va.Vehicle)
+            .Include(va => va.ToDealer)
+            .Include(va => va.RequestedByUser)
+            .Include(va => va.ReviewedByUser)
+            .Where(va => va.RequestedByUserId == userId)
+            .OrderByDescending(va => va.RequestDate)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<VehicleAllocation>> GetByDealerAndStatusAsync(int dealerId, int status)
+    {
+        return await _context.VehicleAllocations
+            .Include(va => va.Vehicle)
+            .Include(va => va.ToDealer)
+            .Include(va => va.RequestedByUser)
+            .Where(va => va.ToDealerId == dealerId && va.Status == status)
+            .OrderByDescending(va => va.RequestDate)
+            .ToListAsync();
     }
 }

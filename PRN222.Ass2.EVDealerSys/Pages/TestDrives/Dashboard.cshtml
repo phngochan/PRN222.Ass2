@@ -259,3 +259,67 @@
         border-left: 0.25rem solid #4e73df !important;
     }
 </style>
+
+@section Scripts {
+    <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
+    <script>
+        // ========== SignalR Real-time Dashboard Updates ==========
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/testDriveHub")
+            .withAutomaticReconnect()
+            .build();
+
+        // Listen for any test drive changes and refresh dashboard
+        connection.on("TestDriveCreated", function (data) {
+            console.log("📊 Dashboard: New test drive created", data);
+            showDashboardNotification('Lịch thử xe mới được tạo!');
+            refreshDashboard();
+        });
+
+        connection.on("TestDriveUpdated", function (data) {
+            console.log("📊 Dashboard: Test drive updated", data);
+            showDashboardNotification('Lịch thử xe đã được cập nhật!');
+            refreshDashboard();
+        });
+
+        connection.on("TestDriveStatusChanged", function (data) {
+            console.log("📊 Dashboard: Status changed", data);
+            showDashboardNotification(`Trạng thái: ${data.statusName}`);
+            refreshDashboard();
+        });
+
+        // Start connection
+        connection.start()
+            .then(() => {
+                console.log("✅ Dashboard connected to TestDriveHub");
+            })
+            .catch(err => {
+                console.error("❌ Dashboard SignalR connection error:", err);
+            });
+
+        // Auto-refresh dashboard
+        function refreshDashboard() {
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        }
+
+        // Show notification
+        function showDashboardNotification(message) {
+            const alertHtml = `
+                <div class="alert alert-info alert-dismissible fade show position-fixed" 
+                     style="top: 80px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+                    <i class="fas fa-sync-alt me-2"></i>
+                    <strong>${message}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            $('body').append(alertHtml);
+            
+            setTimeout(() => {
+                $('.alert').fadeOut('slow', function() { $(this).remove(); });
+            }, 5000);
+        }
+    </script>
+}

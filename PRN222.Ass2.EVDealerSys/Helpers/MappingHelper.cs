@@ -30,6 +30,7 @@ public static class MappingHelper
             Region = d.Region ?? ""
         }).ToList();
     }
+    
     public static List<DealerListItem> ToDealerListItem(IEnumerable<Dealer> dealers)
     {
         return dealers.Select(d => new DealerListItem
@@ -74,6 +75,7 @@ public static class MappingHelper
             }).ToList() ?? new List<DealerInventoryInfo>()
         };
     }
+    
     public static string GetOrderStatusText(int status)
     {
         return status switch
@@ -84,6 +86,37 @@ public static class MappingHelper
             3 => "Đã hoàn thành",
             4 => "Đã hủy",
             _ => "Không xác định"
+        };
+    }
+
+    // NEW: Thêm helper cho AllocationStatus
+    public static string GetAllocationStatusText(int status)
+    {
+        return status switch
+        {
+            0 => "Chờ Manager xét duyệt",
+            1 => "Chờ EVM phê duyệt",
+            2 => "Đã phê duyệt",
+            3 => "Từ chối",
+            4 => "Đang vận chuyển",
+            5 => "Đã giao",
+            6 => "Đã hủy",
+            _ => "Không xác định"
+        };
+    }
+
+    public static string GetAllocationStatusBadgeClass(int status)
+    {
+        return status switch
+        {
+            0 => "warning",
+            1 => "info",
+            2 => "success",
+            3 => "danger",
+            4 => "primary",
+            5 => "success",
+            6 => "secondary",
+            _ => "secondary"
         };
     }
 }

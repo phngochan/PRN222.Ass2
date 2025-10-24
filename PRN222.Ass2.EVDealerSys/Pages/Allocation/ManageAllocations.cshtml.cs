@@ -4,10 +4,11 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.Allocation;
 using PRN222.Ass2.EVDealerSys.DAL.Interfaces;
+using System.Security.Claims;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.Allocation;
 
-[Authorize(Roles = "1")] // Admin only
+[Authorize(Roles = "1,4")] // CHỈ Admin và EVM Staff
 public class ManageAllocationsModel : PageModel
 {
     private readonly IAllocationService _allocationService;
@@ -33,6 +34,7 @@ public class ManageAllocationsModel : PageModel
 
     public async Task OnGetAsync()
     {
+        // Role 4 (EVM) và Role 1 (Admin) xem TẤT CẢ yêu cầu
         var allAllocations = await _allocationRepo.GetAllWithDetailsAsync();
         AllRequests = allAllocations.Select(MapToDto).ToList();
         Requests = AllRequests;
@@ -59,6 +61,13 @@ public class ManageAllocationsModel : PageModel
 
     public async Task<IActionResult> OnPostFulfillAsync(int allocationId)
     {
+        // Chỉ Role 4 (EVM Staff) mới được xuất kho
+        if (!User.IsInRole("4"))
+        {
+            TempData["ErrorMessage"] = "Bạn không có quyền thực hiện thao tác này";
+            return RedirectToPage();
+        }
+
         var (success, message) = await _allocationService.FulfillAllocationAsync(allocationId);
         TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
         return RedirectToPage();
@@ -66,6 +75,13 @@ public class ManageAllocationsModel : PageModel
 
     public async Task<IActionResult> OnPostDeliverAsync(int allocationId, DateTime deliveryDate)
     {
+        // Chỉ Role 4 (EVM Staff) mới được xác nhận giao hàng
+        if (!User.IsInRole("4"))
+        {
+            TempData["ErrorMessage"] = "Bạn không có quyền thực hiện thao tác này";
+            return RedirectToPage();
+        }
+
         var (success, message) = await _allocationService.UpdateDeliveryStatusAsync(allocationId, deliveryDate);
         TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
         return RedirectToPage();
@@ -88,6 +104,10 @@ public class ManageAllocationsModel : PageModel
             RequestedByUserId = allocation.RequestedByUserId ?? 0,
             RequestedByUserName = allocation.RequestedByUser?.Name,
             RequestDate = allocation.RequestDate ?? DateTime.Now,
+            ReviewedByUserId = allocation.ReviewedByUserId,
+            ReviewedByUserName = allocation.ReviewedByUser?.Name,
+            ReviewDate = allocation.ReviewDate,
+            ManagerNotes = allocation.ManagerNotes,
             Status = allocation.Status ?? 0,
             StatusText = _allocationService.GetStatusText(allocation.Status ?? 0),
             ApprovedByUserId = allocation.ApprovedByUserId,

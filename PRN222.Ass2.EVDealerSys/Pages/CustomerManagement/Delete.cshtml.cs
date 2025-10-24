@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.SignalR;
 
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
-using PRN222.Ass2.EVDealerSys.Models.CustomerManagement;
 using PRN222.Ass2.EVDealerSys.Hubs;
+using PRN222.Ass2.EVDealerSys.Models.CustomerManagement;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.CustomerManagement
 {
@@ -35,7 +35,7 @@ namespace PRN222.Ass2.EVDealerSys.Pages.CustomerManagement
                     return RedirectToAction(nameof(Index));
                 }
 
-                var viewModel = new DeleteCustomerViewModel
+                ViewModel = new DeleteCustomerViewModel
                 {
                     Id = customer.Id,
                     Name = customer.Name ?? "",
@@ -56,17 +56,18 @@ namespace PRN222.Ass2.EVDealerSys.Pages.CustomerManagement
                 return RedirectToAction(nameof(Index));
             }
         }
-        public async Task<IActionResult> OnPostAsync(int id)
+        public async Task<IActionResult> OnPostAsync()
         {
             try
             {
+                var id = ViewModel.Id;
                 var customerName = ViewModel.Name; // Store name before delete
                 var success = await _customerService.DeleteCustomerAsync(id);
                 if (success)
                 {
                     SetSuccess("Xóa khách hàng thành công!");
                     await LogAsync("Delete Customer", $"Deleted: {customerName} (ID={id})");
-                    
+
                     // Send SignalR notification
                     await _hubContext.Clients.All.SendAsync("ReceiveCustomerDeleted", new
                     {

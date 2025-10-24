@@ -49,12 +49,12 @@
                         <label class="form-label" asp-for="FilterStatus">Trạng thái</label>
                         <select class="form-select" asp-for="FilterStatus">
                             <option value="">-- Tất cả --</option>
-                            <option value="1" selected="@(Model.FilterStatus == 1)">Chờ xác nhận</option>
-                            <option value="2" selected="@(Model.FilterStatus == 2)">Đã xác nhận</option>
-                            <option value="3" selected="@(Model.FilterStatus == 3)">Hoàn thành</option>
-                            <option value="4" selected="@(Model.FilterStatus == 4)">Đã hủy</option>
-                            <option value="5" selected="@(Model.FilterStatus == 5)">Khách hàng hủy</option>
-                            <option value="6" selected="@(Model.FilterStatus == 6)">Khách hàng không đến</option>
+                            <option value="1">Chờ xác nhận</option>
+                            <option value="2">Đã xác nhận</option>
+                            <option value="3">Hoàn thành</option>
+                            <option value="4">Đã hủy</option>
+                            <option value="5">Khách hàng hủy</option>
+                            <option value="6">Khách hàng không đến</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -95,40 +95,29 @@
                                 <th>Ngày &amp; Giờ</th>
                                 <th>Trạng thái</th>
                                 <th>Ghi chú</th>
-                                <th width="200">Thao tác</th>
+                                <th width="220">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var item in vm.TestDrives)
                             {
+                                var testDriveEndDateTime = item.ScheduledDate.Date.Add(item.EndTime);
+                                var hasTestDriveEnded = DateTime.Now > testDriveEndDateTime;
+                                
                                 <tr>
                                     <td>@item.Id</td>
+                                    <td><strong>@item.CustomerName</strong></td>
                                     <td>
-                                        <strong>@item.CustomerName</strong>
-                                    </td>
-                                    <td>
-                                        <div>
-                                            <small>
-                                                <i class="fas fa-phone"></i> @item.CustomerPhone
-                                            </small>
-                                        </div>
-                                        <div>
-                                            <small>
-                                                <i class="fas fa-envelope"></i> @item.CustomerEmail
-                                            </small>
-                                        </div>
+                                        <div><small><i class="fas fa-phone"></i> @item.CustomerPhone</small></div>
+                                        <div><small><i class="fas fa-envelope"></i> @item.CustomerEmail</small></div>
                                     </td>
                                     <td>
                                         <div><strong>@item.VehicleName</strong></div>
                                         <small class="text-muted">@item.VehicleModel</small>
                                     </td>
                                     <td>
-                                        <div>
-                                            <i class="fas fa-calendar"></i> @item.ScheduledDate.ToString("dd/MM/yyyy")
-                                        </div>
-                                        <div>
-                                            <i class="fas fa-clock"></i> @item.StartTime.ToString(@"hh\:mm") - @item.EndTime.ToString(@"hh\:mm")
-                                        </div>
+                                        <div><i class="fas fa-calendar"></i> @item.ScheduledDate.ToString("dd/MM/yyyy")</div>
+                                        <div><i class="fas fa-clock"></i> @item.StartTime.ToString(@"hh\:mm") - @item.EndTime.ToString(@"hh\:mm")</div>
                                     </td>
                                     <td>
                                         <span class="badge bg-@Model.GetStatusBadgeClass(item.Status)">
@@ -176,57 +165,46 @@
 
                                             @if (item.Status == 2)
                                             {
-                                                <form method="post" asp-page-handler="UpdateStatus" class="d-inline">
-                                                    <input type="hidden" name="id" value="@item.Id" />
-                                                    <input type="hidden" name="status" value="3" />
-                                                    <button type="submit" class="btn btn-outline-primary"
-                                                            title="Hoàn thành" onclick="return confirm('Đánh dấu hoàn thành?')">
-                                                        <i class="fas fa-flag-checkered"></i>
-                                                    </button>
-                                                </form>
-                                            }
-
-                                            @if (item.Status == 2)
-                                            {
-                                                @* Chỉ cho phép đánh dấu "Không đến" sau khi qua giờ thử xe *@
-                                                var testDriveDateTime = item.ScheduledDate.Date.Add(item.EndTime);
-                                                var canMarkNoShow = DateTime.Now > testDriveDateTime;
-                                                
-                                                if (canMarkNoShow)
+                                                @if (hasTestDriveEnded)
                                                 {
                                                     <form method="post" asp-page-handler="UpdateStatus" class="d-inline">
                                                         <input type="hidden" name="id" value="@item.Id" />
-                                                        <input type="hidden" name="status" value="6" />
-                                                        <button type="submit" class="btn btn-outline-dark"
-                                                                title="Khách hàng không đến" onclick="return confirm('Xác nhận khách hàng không đến?')">
-                                                            <i class="fas fa-user-clock"></i>
+                                                        <input type="hidden" name="status" value="3" />
+                                                        <button type="submit" class="btn btn-outline-primary"
+                                                                title="Hoàn thành" onclick="return confirm('Đánh dấu hoàn thành?')">
+                                                            <i class="fas fa-flag-checkered"></i>
                                                         </button>
                                                     </form>
+
+                                                    <button type="button" class="btn btn-outline-dark"
+                                                            data-bs-toggle="modal" data-bs-target="#noShowModal@(item.Id)"
+                                                            title="Khách hàng không đến">
+                                                        <i class="fas fa-user-clock"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" class="btn btn-outline-secondary" disabled
+                                                            title="Chỉ có thể hoàn thành sau @testDriveEndDateTime.ToString("dd/MM/yyyy HH:mm")">
+                                                        <i class="fas fa-flag-checkered"></i>
+                                                    </button>
                                                 }
                                             }
 
+                                            @* NÚT HỦY LỊCH - MỞ MODAL *@
                                             @if (item.Status == 1 || item.Status == 2)
                                             {
-                                                <form method="post" asp-page-handler="UpdateStatus" class="d-inline">
-                                                    <input type="hidden" name="id" value="@item.Id" />
-                                                    <input type="hidden" name="status" value="4" />
-                                                    <button type="submit" class="btn btn-outline-danger"
-                                                            title="Hủy lịch" onclick="return confirm('Hủy lịch thử xe này?')">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </form>
-                                            }
+                                                <button type="button" class="btn btn-outline-danger"
+                                                        data-bs-toggle="modal" data-bs-target="#cancelModal@(item.Id)"
+                                                        title="Hủy lịch">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
 
-                                            @if (item.Status == 1 || item.Status == 2)
-                                            {
-                                                <form method="post" asp-page-handler="UpdateStatus" class="d-inline">
-                                                    <input type="hidden" name="id" value="@item.Id" />
-                                                    <input type="hidden" name="status" value="5" />
-                                                    <button type="submit" class="btn btn-outline-secondary"
-                                                            title="Khách hàng hủy?" onclick="return confirm('Xác nhận khách hàng hủy lịch?')">
-                                                        <i class="fas fa-user-slash"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-outline-secondary"
+                                                        data-bs-toggle="modal" data-bs-target="#customerCancelModal@(item.Id)"
+                                                        title="Khách hàng hủy">
+                                                    <i class="fas fa-user-slash"></i>
+                                                </button>
                                             }
                                         </div>
                                     </td>
@@ -264,10 +242,247 @@
     </div>
 </div>
 
+@* ====== MODALS - ĐẶT NGOÀI VÒNG LẶP ====== *@
+@if (vm.TestDrives.Any())
+{
+    @foreach (var item in vm.TestDrives)
+    {
+        var testDriveEndDateTime = item.ScheduledDate.Date.Add(item.EndTime);
+        var hasTestDriveEnded = DateTime.Now > testDriveEndDateTime;
+
+        @* MODAL HỦY LỊCH (STATUS = 4) *@
+        @if (item.Status == 1 || item.Status == 2)
+        {
+            <div class="modal fade" id="cancelModal@(item.Id)" tabindex="-1" data-bs-backdrop="static">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-times-circle"></i> Hủy Lịch Thử Xe
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="post" asp-page-handler="CancelWithReason" class="cancel-form" data-item-id="@item.Id" novalidate>
+                            <div class="modal-body">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="hidden" name="status" value="4" />
+                                
+                                <div class="alert alert-warning">
+                                    <strong>Khách hàng:</strong> @item.CustomerName<br />
+                                    <strong>Xe:</strong> @item.VehicleName<br />
+                                    <strong>Thời gian:</strong> @item.ScheduledDate.ToString("dd/MM/yyyy") @item.StartTime.ToString(@"hh\:mm")
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        Lý do hủy lịch <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea name="cancelReason" class="form-control cancel-reason" rows="4"
+                                              placeholder="Nhập lý do hủy lịch thử xe..." required></textarea>
+                                    <div class="invalid-feedback">Vui lòng nhập lý do hủy lịch</div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <button type="submit" class="btn btn-danger submit-btn">
+                                    <span class="btn-text"><i class="fas fa-times"></i> Xác nhận hủy</span>
+                                    <span class="btn-spinner d-none">
+                                        <span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            @* MODAL KHÁCH HÀNG HỦY (STATUS = 5) *@
+            <div class="modal fade" id="customerCancelModal@(item.Id)" tabindex="-1" data-bs-backdrop="static">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-secondary text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-user-slash"></i> Khách Hàng Hủy Lịch
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="post" asp-page-handler="CancelWithReason" class="cancel-form" data-item-id="@item.Id" novalidate>
+                            <div class="modal-body">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="hidden" name="status" value="5" />
+                                
+                                <div class="alert alert-info">
+                                    <strong>Khách hàng:</strong> @item.CustomerName<br />
+                                    <strong>Xe:</strong> @item.VehicleName<br />
+                                    <strong>Thời gian:</strong> @item.ScheduledDate.ToString("dd/MM/yyyy") @item.StartTime.ToString(@"hh\:mm")
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        Lý do khách hàng hủy <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea name="cancelReason" class="form-control cancel-reason" rows="4"
+                                              placeholder="Nhập lý do khách hàng hủy lịch..." required></textarea>
+                                    <div class="invalid-feedback">Vui lòng nhập lý do khách hàng hủy</div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <button type="submit" class="btn btn-secondary submit-btn">
+                                    <span class="btn-text"><i class="fas fa-user-slash"></i> Xác nhận</span>
+                                    <span class="btn-spinner d-none">
+                                        <span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* MODAL KHÔNG ĐẾN (STATUS = 6) - CHỈ HIỂN thị SAU GIỜ KẾT THÚC *@
+        @if (item.Status == 2 && hasTestDriveEnded)
+        {
+            <div class="modal fade" id="noShowModal@(item.Id)" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-dark text-white">
+                            <h5 class="modal-title">
+                                <i class="fas fa-user-clock"></i> Khách Không Đến
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="post" asp-page-handler="UpdateStatus">
+                            <div class="modal-body">
+                                <input type="hidden" name="id" value="@item.Id" />
+                                <input type="hidden" name="status" value="6" />
+                                
+                                <div class="alert alert-warning">
+                                    <p>Xác nhận khách hàng <strong>@item.CustomerName</strong> không đến?</p>
+                                    <p class="mb-0"><strong>Lịch hẹn:</strong> @item.ScheduledDate.ToString("dd/MM/yyyy") @item.StartTime.ToString(@"hh\:mm")</p>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <button type="submit" class="btn btn-dark">
+                                    <i class="fas fa-user-clock"></i> Xác nhận
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+}
+
 @section Scripts {
+    <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
     <script>
-        setTimeout(function () {
-            $('.alert').fadeOut('slow');
-        }, 5000);
+        $(function () {
+            // Auto-dismiss alerts
+            setTimeout(() => $('.alert').fadeOut('slow'), 5000);
+
+            // Validate và prevent double-submit cho cancel forms
+            // SỬ DỤNG DELEGATION để tránh bind nhiều lần
+            $(document).on('submit', '.cancel-form', function (e) {
+                var $form = $(this);
+                var $reasonField = $form.find('.cancel-reason');
+                var $submitBtn = $form.find('.submit-btn');
+                var reason = ($reasonField.val() || '').trim();
+
+                // Validation
+                if (reason === '') {
+                    e.preventDefault();
+                    $reasonField.addClass('is-invalid').focus();
+                    return false;
+                } else {
+                    $reasonField.removeClass('is-invalid');
+                }
+
+                // Prevent double-submit
+                if ($submitBtn.prop('disabled')) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Disable button NGAY LẬP TỨC
+                $submitBtn.prop('disabled', true);
+
+                // Show spinner
+                var $btnText = $submitBtn.find('.btn-text');
+                var $btnSpinner = $submitBtn.find('.btn-spinner');
+                $btnText.addClass('d-none');
+                $btnSpinner.removeClass('d-none');
+
+                // Allow form to submit naturally
+                return true;
+            });
+
+            // Clear validation khi gõ - SỬ DỤNG DELEGATION
+            $(document).on('input', '.cancel-reason', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            // Reset modal khi đóng - SỬ DỤNG DELEGATION
+            $(document).on('hidden.bs.modal', '.modal', function () {
+                var $modal = $(this);
+                var $form = $modal.find('.cancel-form');
+                
+                if ($form.length) {
+                    $form[0].reset();
+                    $form.find('.cancel-reason').removeClass('is-invalid');
+                    var $submitBtn = $form.find('.submit-btn');
+                    
+                    // Reset button state
+                    $submitBtn.prop('disabled', false);
+                    $form.find('.btn-text').removeClass('d-none');
+                    $form.find('.btn-spinner').addClass('d-none');
+                }
+            });
+
+            // SignalR
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/testDriveHub")
+                .withAutomaticReconnect()
+                .build();
+
+            connection.on("TestDriveCreated", (data) => {
+                showNotification('success', `Lịch thử xe mới: ${data.customerName} - ${data.vehicleName}`);
+                setTimeout(() => location.reload(), 2000);
+            });
+
+            connection.on("TestDriveUpdated", (data) => {
+                showNotification('info', `Lịch thử xe đã cập nhật: ${data.customerName}`);
+                setTimeout(() => location.reload(), 2000);
+            });
+
+            connection.on("TestDriveStatusUpdated", (data) => {
+                showNotification('warning', `Trạng thái: ${data.statusName}`);
+                setTimeout(() => location.reload(), 2000);
+            });
+
+            connection.start()
+                .then(() => console.log("✅ Connected to TestDriveHub"))
+                .catch(err => console.error("❌ SignalR error:", err));
+
+            function showNotification(type, message) {
+                const alertClass = type === 'success' ? 'alert-success' : 
+                                 type === 'info' ? 'alert-info' : 'alert-warning';
+                const icon = type === 'success' ? 'fa-check-circle' : 
+                           type === 'info' ? 'fa-info-circle' : 'fa-exclamation-triangle';
+                
+                const alertHtml = `
+                    <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+                         style="top: 80px; right: 20px; z-index: 9999; min-width: 300px;">
+                        <i class="fas ${icon} me-2"></i><strong>${message}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                $('body').append(alertHtml);
+                setTimeout(() => $('.alert').fadeOut('slow', function() { $(this).remove(); }), 5000);
+            }
+        });
     </script>
 }

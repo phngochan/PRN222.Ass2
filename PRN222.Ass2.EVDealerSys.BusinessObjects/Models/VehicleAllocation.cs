@@ -28,9 +28,15 @@ public partial class VehicleAllocation
 
     public int? Status { get; set; } // 0: Pending, 1: Approved, 2: Rejected, 3: In Transit, 4: Delivered
 
-    public int? RequestedByUserId { get; set; } // User tạo request (Dealer Manager)
+    public int? RequestedByUserId { get; set; } // User tạo request (Role 3 - Dealer Staff)
 
-    public int? ApprovedByUserId { get; set; } // EVM Staff/Admin phê duyệt
+    public int? ReviewedByUserId { get; set; } // Role 2 - Dealer Manager xác nhận
+
+    public DateTime? ReviewDate { get; set; } // Ngày Role 2 xác nhận
+
+    public string? ManagerNotes { get; set; } // Ghi chú của Manager
+
+    public int? ApprovedByUserId { get; set; } // EVM Staff/Admin phê duyệt (Role 4)
 
     public string? ApprovalNotes { get; set; } // Ghi chú khi phê duyệt/từ chối
 
@@ -41,6 +47,8 @@ public partial class VehicleAllocation
     public virtual Vehicle? Vehicle { get; set; }
 
     public virtual User? RequestedByUser { get; set; }
+
+    public virtual User? ReviewedByUser { get; set; }
 
     public virtual User? ApprovedByUser { get; set; }
 }

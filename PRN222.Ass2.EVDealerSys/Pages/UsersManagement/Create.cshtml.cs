@@ -2,23 +2,31 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 
+using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.UsersManagement;
 
 [Authorize(Roles = "1")]
-public class CreateModel : PageModel
+public class CreateModel : BaseCrudPageModel
 {
     private readonly IUserService _userService;
     private readonly IDealerService _dealerService;
 
-    public CreateModel(IUserService userService, IDealerService dealerService)
+    public CreateModel(
+        IActivityLogService logService,
+        IUserService userService,
+        IDealerService dealerService,
+        IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
     {
         _userService = userService;
         _dealerService = dealerService;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     [BindProperty]
@@ -30,6 +38,7 @@ public class CreateModel : PageModel
     {
         RoleOptions = GetRoleSelectList();
         DealerOptions = await GetDealerSelectList();
+        await LogAsync("Open Create User", "Admin opened user creation form");
         return Page();
     }
 
@@ -53,11 +62,13 @@ public class CreateModel : PageModel
         var result = await _userService.CreateUserAsync(user);
         if (result.Success)
         {
+            await LogAsync("Create User", $"Created user: {user.Name} ({user.Email}), Role={_userService.GetRoleName(user.Role)}");
             TempData["SuccessMessage"] = result.Message;
             return RedirectToPage("./Index");
         }
         else
         {
+            await LogAsync("Error", $"Failed to create user: {result.Message}");
             ModelState.AddModelError("", result.Message);
             RoleOptions = GetRoleSelectList();
             DealerOptions = await GetDealerSelectList();

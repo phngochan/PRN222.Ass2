@@ -1,23 +1,31 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 
+using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
+using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.UsersManagement;
 
 [Authorize(Roles = "1,2")]
-public class EditModel : PageModel
+public class EditModel : BaseCrudPageModel
 {
     private readonly IUserService _userService;
     private readonly IDealerService _dealerService;
 
-    public EditModel(IUserService userService, IDealerService dealerService)
+    public EditModel(
+        IUserService userService,
+        IDealerService dealerService,
+        IActivityLogService activityLogService,
+        IHubContext<ActivityLogHub> activityLogHubContext)
+        : base(activityLogService)
     {
         _userService = userService;
         _dealerService = dealerService;
+        SetActivityLogHubContext(activityLogHubContext);
     }
 
     [BindProperty]
@@ -42,6 +50,7 @@ public class EditModel : PageModel
             RoleName = _userService.GetRoleName(user.Role)
         };
 
+        await LogAsync("Edit User", $"Open Edit page for user: {user.Name} (ID={user.Id})");
         RoleOptions = GetRoleSelectList();
         DealerOptions = await GetDealerSelectList();
         return Page();
@@ -81,11 +90,13 @@ public class EditModel : PageModel
         var result = await _userService.UpdateUserAsync(existingUser);
         if (result.Success)
         {
+            await LogAsync("Edit User", $"Updated user: {existingUser.Name} (ID={existingUser.Id}), Email={existingUser.Email}, Role={_userService.GetRoleName(existingUser.Role)}");
             TempData["SuccessMessage"] = result.Message;
             return RedirectToPage("./Index");
         }
         else
         {
+            await LogAsync("Error", $"Failed to update user ID={ViewModel.Id}: {result.Message}");
             ModelState.AddModelError("", result.Message);
             RoleOptions = GetRoleSelectList();
             DealerOptions = await GetDealerSelectList();

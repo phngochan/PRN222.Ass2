@@ -1,47 +1,86 @@
-<!-- Breadcrumb Navigation Component -->
 @{
-    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
-    var action = ViewContext.RouteData.Values["action"]?.ToString();
-    
-    var breadcrumbMap = new Dictionary<string, Dictionary<string, string>>
+    var page = ViewContext.RouteData.Values["page"]?.ToString() ?? "/";
+    string[] segments = page.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+    var nameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
-        { "Home", new Dictionary<string, string> { { "Index", "Trang Chủ" }, { "Privacy", "Chính Sách Bảo Mật" } } },
-        { "Dashboard", new Dictionary<string, string> { { "Index", "Dashboard" }, { "Admin", "Dashboard Admin" }, { "Manager", "Dashboard Manager" }, { "Staff", "Dashboard Staff" } } },
-        { "User", new Dictionary<string, string> { { "Index", "Danh Sách User" }, { "Create", "Tạo User" }, { "Edit", "Chỉnh Sửa User" }, { "Details", "Chi Tiết User" }, { "Delete", "Xóa User" } } },
-        { "TestDrive", new Dictionary<string, string> { { "Index", "Lịch Thử Xe" }, { "Create", "Tạo Lịch" }, { "Edit", "Chỉnh Sửa Lịch" }, { "Details", "Chi Tiết Lịch" } } },
-        { "Customer", new Dictionary<string, string> { { "Index", "Danh Sách Khách Hàng" }, { "Create", "Tạo Khách Hàng" }, { "Edit", "Chỉnh Sửa" }, { "Details", "Chi Tiết" } } },
-        { "Vehicle", new Dictionary<string, string> { { "Index", "Kho Xe" }, { "Details", "Chi Tiết Xe" } } },
-        { "Orders", new Dictionary<string, string> { { "Index", "Đơn Hàng" }, { "Create", "Tạo Đơn" }, { "Details", "Chi Tiết Đơn" } } },
-        { "Account", new Dictionary<string, string> { { "Login", "Đăng Nhập" } } }
+        { "Dashboard", "Dashboard" },
+        { "Admin", "Admin" },
+        { "Manager", "Quản lý" },
+        { "Staff", "Nhân viên" },
+        { "VehiclesManagement", "Quản lý Xe điện" },
+        { "UsersManagement", "Quản lý Người dùng" },
+        { "DealersManagement", "Quản lý Đại lý" },
+        { "CustomerManagement", "Quản lý Khách hàng" },
+        { "Orders", "Đơn hàng" },
+        { "TestDrive", "Lịch lái thử" },
+        { "Create", "Tạo mới" },
+        { "Edit", "Chỉnh sửa" },
+        { "Details", "Chi tiết" },
+        { "Delete", "Xóa" },
     };
-    
-    string controllerName = controller ?? "Home";
-    string actionName = action ?? "Index";
-    string currentPage = breadcrumbMap.ContainsKey(controllerName) && breadcrumbMap[controllerName].ContainsKey(actionName) 
-        ? breadcrumbMap[controllerName][actionName] 
-        : actionName;
+
+    string ToReadable(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return "";
+        return nameMap.TryGetValue(input, out var readable)
+            ? readable
+            : char.ToUpper(input[0]) + input.Substring(1);
+    }
+
+    // Nếu trang hiện tại là Index, bỏ qua segment cuối
+    if (segments.Length > 0 && segments.Last().Equals("Index", StringComparison.OrdinalIgnoreCase))
+    {
+        segments = segments.Take(segments.Length - 1).ToArray();
+    }
 }
 
 <nav aria-label="breadcrumb" class="ev-breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-            <a asp-controller="Home" asp-action="Index">
-                <i class="fas fa-home"></i> Trang Chủ
-            </a>
-        </li>
-        
-        @if (controllerName != "Home" || actionName != "Index")
+        @* Trang chủ hoặc Dashboard *@
+        @if ((User.Identity?.IsAuthenticated ?? false) && User.IsInRole("4"))
         {
-            @if (controllerName != "Home")
+            <li class="breadcrumb-item">
+                <a asp-page="/">
+                    <i class="fas fa-home"></i> Trang Chủ
+                </a>
+            </li>
+        }
+        else
+        {
+            <li class="breadcrumb-item">
+                <a asp-page="/Dashboard/Index">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </li>
+        }
+
+        @if (segments.Length > 0 && page != "/" && page != "/Dashboard/Index")
+        {
+            for (int i = 0; i < segments.Length; i++)
             {
-                <li class="breadcrumb-item">
-                    <a asp-controller="@controller" asp-action="Index">@controllerName</a>
-                </li>
-            }
-            
-            @if (actionName != "Index")
-            {
-                <li class="breadcrumb-item active" aria-current="page">@currentPage</li>
+                if (segments[i].Equals("Dashboard", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                string path = "/" + string.Join("/", segments.Take(i + 1));
+                bool isLast = i == segments.Length - 1;
+                string label = ToReadable(segments[i]);
+
+                if (!isLast)
+                {
+                    path += "/Index";
+                }
+
+                if (isLast)
+                {
+                    <li class="breadcrumb-item active" aria-current="page">@label</li>
+                }
+                else
+                {
+                    <li class="breadcrumb-item">
+                        <a asp-page="@path">@label</a>
+                    </li>
+                }
             }
         }
     </ol>
@@ -53,33 +92,33 @@
         padding: 1rem 0;
         margin-bottom: 1.5rem;
     }
-    
-    .ev-breadcrumb .breadcrumb {
-        background-color: var(--ev-pale-green);
-        border-radius: 8px;
-        padding: 0.75rem 1.5rem;
-        margin-bottom: 0;
-    }
-    
-    .ev-breadcrumb .breadcrumb-item a {
-        color: var(--ev-dark-green);
-        text-decoration: none;
-        transition: all 0.3s;
-    }
-    
-    .ev-breadcrumb .breadcrumb-item a:hover {
-        color: var(--ev-medium-green);
-        padding-left: 5px;
-    }
-    
-    .ev-breadcrumb .breadcrumb-item.active {
-        color: var(--ev-text-dark);
-        font-weight: 600;
-    }
-    
-    .ev-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
-        content: "›";
-        color: var(--ev-medium-green);
-        font-weight: bold;
-    }
+
+        .ev-breadcrumb .breadcrumb {
+            background-color: var(--ev-pale-green);
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            margin-bottom: 0;
+        }
+
+        .ev-breadcrumb .breadcrumb-item a {
+            color: var(--ev-dark-green);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+            .ev-breadcrumb .breadcrumb-item a:hover {
+                color: var(--ev-medium-green);
+                padding-left: 5px;
+            }
+
+        .ev-breadcrumb .breadcrumb-item.active {
+            color: var(--ev-text-dark);
+            font-weight: 600;
+        }
+
+        .ev-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+            content: "›";
+            color: var(--ev-medium-green);
+            font-weight: bold;
+        }
 </style>

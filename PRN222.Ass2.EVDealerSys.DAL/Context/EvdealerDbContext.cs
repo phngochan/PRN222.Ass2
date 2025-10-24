@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-
 using PRN222.Ass2.EVDealerSys.BusinessObjects.Models;
 
 namespace PRN222.Ass2.EVDealerSys.DAL.Context;
@@ -17,27 +16,16 @@ public partial class EvdealerDbContext : DbContext
     }
 
     public virtual DbSet<Contract> Contracts { get; set; }
-
     public virtual DbSet<Customer> Customers { get; set; }
-
     public virtual DbSet<Dealer> Dealers { get; set; }
-
     public virtual DbSet<Inventory> Inventories { get; set; }
-
     public virtual DbSet<Order> Orders { get; set; }
-
     public virtual DbSet<OrderItem> OrderItems { get; set; }
-
     public virtual DbSet<Payment> Payments { get; set; }
-
     public virtual DbSet<TestDrive> TestDrives { get; set; }
-
     public virtual DbSet<User> Users { get; set; }
-
     public virtual DbSet<Vehicle> Vehicles { get; set; }
-
     public virtual DbSet<VehicleAllocation> VehicleAllocations { get; set; }
-
     public DbSet<ActivityLog> ActivityLogs { get; set; }
 
     private string? GetConnectionString()
@@ -50,6 +38,7 @@ public partial class EvdealerDbContext : DbContext
 
         return strConn;
     }
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlServer(GetConnectionString());
@@ -122,11 +111,19 @@ public partial class EvdealerDbContext : DbContext
 
         modelBuilder.Entity<VehicleAllocation>(entity =>
         {
+            // Relationship: RequestedByUser (Role 3 - Staff)
             entity.HasOne(va => va.RequestedByUser)
                 .WithMany()
                 .HasForeignKey(va => va.RequestedByUserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            // NEW: Relationship: ReviewedByUser (Role 2 - Manager)
+            entity.HasOne(va => va.ReviewedByUser)
+                .WithMany()
+                .HasForeignKey(va => va.ReviewedByUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Relationship: ApprovedByUser (Role 4 - EVM Staff)
             entity.HasOne(va => va.ApprovedByUser)
                 .WithMany()
                 .HasForeignKey(va => va.ApprovedByUserId)

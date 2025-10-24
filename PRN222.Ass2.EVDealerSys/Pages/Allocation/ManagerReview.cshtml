@@ -1,0 +1,272 @@
+@page
+@model PRN222.Ass2.EVDealerSys.Pages.Allocation.ManagerReviewModel
+@{
+    ViewData["Title"] = "Xét Duyệt Yêu Cầu Nhập Xe";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h2><i class="fas fa-clipboard-check"></i> Xét Duyệt Yêu Cầu Nhập Xe</h2>
+            <p class="text-muted">Quản lý: Xem xét và phê duyệt yêu cầu từ nhân viên</p>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link @(Model.ActiveTab == "pending" ? "active" : "")" href="?ActiveTab=pending">
+                <i class="fas fa-clock"></i> Chờ Xét Duyệt
+                <span class="badge bg-warning">@Model.PendingRequests.Count</span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.ActiveTab == "all" ? "active" : "")" href="?ActiveTab=all">
+                <i class="fas fa-list"></i> Tất Cả Yêu Cầu
+                <span class="badge bg-secondary">@Model.AllRequests.Count</span>
+            </a>
+        </li>
+    </ul>
+
+    @if (Model.ActiveTab == "pending")
+    {
+        @if (!Model.PendingRequests.Any())
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Không có yêu cầu nào chờ xét duyệt.
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var request in Model.PendingRequests)
+                {
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-car"></i> @request.VehicleModel @request.VehicleVersion
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Người yêu cầu:</strong> @request.RequestedByUserName</p>
+                                <p><strong>Số lượng:</strong> @request.Quantity xe</p>
+                                <p><strong>Màu:</strong> @(request.RequestedColor ?? "Không yêu cầu")</p>
+                                <p><strong>Thời hạn:</strong> @request.DesiredDeliveryDate.ToString("dd/MM/yyyy")</p>
+                                <p><strong>Lý do:</strong> @request.ReasonText</p>
+                                <p><strong>Ngày tạo:</strong> @request.RequestDate.ToString("dd/MM/yyyy HH:mm")</p>
+
+                                <div class="alert @(request.IsStockSufficient ? "alert-success" : "alert-danger") py-2">
+                                    <small>
+                                        <i class="fas fa-warehouse"></i> Tồn kho EVM:
+                                        <strong>@request.AvailableStock</strong> xe
+                                    </small>
+                                </div>
+
+                                <hr />
+
+                                <!-- APPROVE FORM: tắt HTML5 validation -->
+                                <form method="post" asp-page-handler="Approve" class="mb-2 allocation-form" novalidate>
+                                    <input type="hidden" name="allocationId" value="@request.Id" />
+                                    <div class="mb-2">
+                                        <label class="form-label small">Ghi chú của Manager:</label>
+                                        <textarea name="notes" class="form-control form-control-sm" rows="2"
+                                                  placeholder="Ghi chú (không bắt buộc)"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-sm w-100 submit-btn"
+                                            @(!request.IsStockSufficient ? "disabled" : "")>
+                                        <i class="fas fa-check"></i> Phê Duyệt & Chuyển EVM
+                                    </button>
+                                </form>
+
+                                <!-- NÚT MỞ MODAL: chặn kích hoạt validation của form khác -->
+                                <button type="button"
+                                        class="btn btn-danger btn-sm w-100"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#rejectModal@(request.Id)"
+                                        formnovalidate>
+                                    <i class="fas fa-times"></i> Từ Chối
+                                </button>
+
+                                <!-- REJECT MODAL: backdrop static + form novalidate, bỏ required -->
+                                <div class="modal fade" id="rejectModal@(request.Id)" tabindex="-1"
+                                     data-bs-backdrop="static" data-bs-keyboard="false">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title">Từ Chối Yêu Cầu</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+
+                                            <form method="post" asp-page-handler="Reject"
+                                                  class="allocation-form reject-form" novalidate>
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="allocationId" value="@request.Id" />
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Lý do từ chối <span class="text-danger">*</span></label>
+                                                        <textarea name="reason" class="form-control reject-reason" rows="3"
+                                                                  placeholder="Nhập lý do từ chối..."></textarea>
+                                                        <div class="invalid-feedback">Vui lòng nhập lý do từ chối</div>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                    <button type="submit" class="btn btn-danger submit-btn">
+                                                        <span class="btn-text">Xác Nhận Từ Chối</span>
+                                                        <span class="btn-spinner d-none">
+                                                            <span class="spinner-border spinner-border-sm me-2"></span>
+                                                            Đang xử lý...
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </form>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- /REJECT MODAL -->
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <!-- ALL REQUESTS -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Xe</th>
+                        <th>Người Yêu Cầu</th>
+                        <th>Số Lượng</th>
+                        <th>Ngày Tạo</th>
+                        <th>Trạng Thái</th>
+                        <th>Người Xét Duyệt</th>
+                        <th>Ngày Xét Duyệt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var request in Model.AllRequests)
+                {
+                    <tr>
+                        <td>@request.VehicleModel @request.VehicleVersion</td>
+                        <td>@request.RequestedByUserName</td>
+                        <td>@request.Quantity</td>
+                        <td>@request.RequestDate.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            <span class="badge bg-@(request.Status switch {
+                                0 => "warning",
+                                1 => "info",
+                                2 => "success",
+                                3 => "danger",
+                                _ => "secondary"
+                            })">@request.StatusText</span>
+                        </td>
+                        <td>@(request.ReviewedByUserName ?? "-")</td>
+                        <td>@(request.ReviewDate?.ToString("dd/MM/yyyy") ?? "-")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Chặn double submit cho tất cả form
+            $('.allocation-form').on('submit', function (e) {
+                var $form = $(this);
+                var $submitBtn = $form.find('.submit-btn');
+
+                // Validate riêng cho form từ chối
+                if ($form.hasClass('reject-form')) {
+                    var $reasonField = $form.find('.reject-reason');
+                    var reason = ($reasonField.val() || '').trim();
+
+                    if (reason === '') {
+                        e.preventDefault();
+                        $reasonField.addClass('is-invalid').focus();
+                        return false;
+                    } else {
+                        $reasonField.removeClass('is-invalid');
+                    }
+                }
+
+                if ($submitBtn.prop('disabled')) {
+                    e.preventDefault();
+                    return false;
+                }
+                $submitBtn.prop('disabled', true);
+
+                // Nếu là reject-form thì đóng modal ngay sau khi bấm submit (để UX mượt)
+                if ($form.hasClass('reject-form')) {
+                    $form.closest('.modal').modal('hide');
+                }
+
+                // Hiển thị spinner
+                var $btnText = $submitBtn.find('.btn-text');
+                var $btnSpinner = $submitBtn.find('.btn-spinner');
+                if ($btnText.length && $btnSpinner.length) {
+                    $btnText.addClass('d-none');
+                    $btnSpinner.removeClass('d-none');
+                } else {
+                    $submitBtn.html('<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...');
+                }
+
+                // Fallback re-enable sau 5s (trong trường hợp server trả lỗi không bắt được)
+                setTimeout(function () {
+                    $submitBtn.prop('disabled', false);
+                    if ($btnText.length && $btnSpinner.length) {
+                        $btnText.removeClass('d-none');
+                        $btnSpinner.addClass('d-none');
+                    }
+                }, 5000);
+            });
+
+            // Clear lỗi khi người dùng gõ lại
+            $(document).on('input', '.reject-reason', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            // Reset modal khi đóng
+            $('.modal').on('hidden.bs.modal', function () {
+                var $form = $(this).find('.reject-form');
+                if ($form.length) {
+                    $form[0].reset();
+                    $form.find('.reject-reason').removeClass('is-invalid');
+                    $form.find('.submit-btn').prop('disabled', false);
+                    var $btnText = $form.find('.btn-text');
+                    var $btnSpinner = $form.find('.btn-spinner');
+                    if ($btnText.length && $btnSpinner.length) {
+                        $btnText.removeClass('d-none');
+                        $btnSpinner.addClass('d-none');
+                    }
+                }
+            });
+
+            // Ẩn alert sau 5s
+            setTimeout(function () { $('.alert').fadeOut('slow'); }, 5000);
+        });
+    </script>
+}
