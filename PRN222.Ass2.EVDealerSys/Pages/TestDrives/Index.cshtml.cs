@@ -19,7 +19,6 @@ public class IndexModel : BaseCrudPageModel
     private readonly ILogger<IndexModel> _logger;
 
     public IndexModel(
-        IActivityLogService logService,
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
         ILogger<IndexModel> logger,
@@ -30,7 +29,6 @@ public class IndexModel : BaseCrudPageModel
         _vehicleService = vehicleService;
         _testDriveHubContext = testDriveHubContext;
         _logger = logger;
-        SetActivityLogHubContext(activityLogHubContext);
     }
 
     [BindProperty(SupportsGet = true)]
@@ -53,7 +51,6 @@ public class IndexModel : BaseCrudPageModel
     {
         await LoadVehiclesAsync();
         await LoadTestDrivesAsync();
-        await LogAsync("View Test Drives List", $"SearchTerm={SearchTerm}, FilterStatus={FilterStatus}, FilterVehicle={FilterVehicle}");
     }
 
     public async Task<IActionResult> OnPostUpdateStatusAsync(int id, int status)
@@ -96,10 +93,23 @@ public class IndexModel : BaseCrudPageModel
                     4 => "Đã hủy",
                     5 => "Khách hàng hủy",
                     6 => "Không đến",
-                    _ => "Unknown"
+                    _ => "Không xác định"
                 };
                 
-                await LogAsync("Update Test Drive Status", $"Updated Test Drive ID={id} to Status={statusName}");
+                // Send real-time notification via SignalR
+                await _hubContext.Clients.All.SendAsync("TestDriveStatusChanged", new
+                {
+                    testDriveId = id,
+                    oldStatus,
+                    newStatus = status,
+                    statusName,
+                    customerName = testDrive?.CustomerName,
+                    vehicleName = testDrive?.VehicleName,
+                    timestamp = DateTime.Now
+                });
+                
+                _logger.LogInformation("Test drive status changed and SignalR notification sent: {Id} from {OldStatus} to {NewStatus}", 
+                    id, oldStatus, status);
                 
                 // Notify via SignalR
                 await _testDriveHubContext.Clients.All.SendAsync("TestDriveStatusUpdated", new
@@ -128,7 +138,6 @@ public class IndexModel : BaseCrudPageModel
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to update test drive status for id {Id}", id);
-            await LogAsync("Error", $"Failed to update test drive status: {ex.Message}");
             TempData["ErrorMessage"] = "Có lỗi xảy ra khi cập nhật trạng thái.";
         }
 
