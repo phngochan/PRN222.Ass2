@@ -27,7 +27,8 @@ public class EditModel : BaseCrudPageModel
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
         ILogger<EditModel> logger,
-        IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
+        IHubContext<ActivityLogHub> activityLogHubContext,
+        IHubContext<TestDriveHub> hubContext) : base(logService)
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;

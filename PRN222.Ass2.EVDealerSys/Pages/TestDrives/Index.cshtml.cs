@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
-
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.TestDrive;
@@ -15,11 +14,12 @@ using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.TestDrives;
 
+[Authorize(Roles = "1,2,3")] // Admin, Manager, Staff có thể xem lịch thử xe
 public class IndexModel : BaseCrudPageModel
 {
     private readonly ITestDriveService _testDriveService;
     private readonly IVehicleService _vehicleService;
-    private readonly IHubContext<TestDriveHub> _hubContext;
+    private readonly IHubContext<TestDriveHub> _testDriveHubContext;
     private readonly ILogger<IndexModel> _logger;
 
     public IndexModel(
@@ -27,11 +27,12 @@ public class IndexModel : BaseCrudPageModel
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
         ILogger<IndexModel> logger,
+        IHubContext<TestDriveHub> testDriveHubContext,
         IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;
-        _hubContext = hubContext;
+        _testDriveHubContext = testDriveHubContext;
         _logger = logger;
         SetActivityLogHubContext(activityLogHubContext);
     }
@@ -83,6 +84,14 @@ public class IndexModel : BaseCrudPageModel
                 };
                 
                 await LogAsync("Update Test Drive Status", $"Updated Test Drive ID={id} to Status={statusName}");
+                
+                // Notify via SignalR
+                await _testDriveHubContext.Clients.All.SendAsync("TestDriveStatusUpdated", new
+                {
+                    testDriveId = id,
+                    newStatus = status,
+                    statusName = statusName
+                });
                 
                 TempData["SuccessMessage"] = status switch
                 {

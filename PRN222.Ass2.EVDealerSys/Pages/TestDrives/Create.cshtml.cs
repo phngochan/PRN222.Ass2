@@ -25,7 +25,9 @@ public class CreateModel : BaseCrudPageModel
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
         ICustomerService customerService,
-        ILogger<CreateModel> logger, IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
+        ILogger<CreateModel> logger, 
+        IHubContext<ActivityLogHub> activityLogHubContext,
+        IHubContext<TestDriveHub> hubContext) : base(logService)
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;
