@@ -82,12 +82,12 @@
                                     <li><a class="dropdown-item ev-dropdown-item" href="/DealersManagement"><i class="fas fa-building"></i> Đại lý</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li class="dropdown-header">Phân Bổ Xe</li>
-                                    @* Staff yêu cầu phân bổ *@
+                                  
                                     @if (User.IsInRole("3"))
                                     {
                                         <li>
                                             <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/Request">
-                                                <i class="fas fa-plus-circle"></i> Yêu Cầu Phân Bổ
+                                                <i class="fas fa-plus-circle"></i> Tạo Yêu Cầu Phân Bổ
                                             </a>
                                         </li>
                                         <li>
@@ -96,32 +96,53 @@
                                             </a>
                                         </li>
                                     }
-                                    @* Manager phê duyệt yêu cầu *@
+
+                               
                                     @if (User.IsInRole("2"))
                                     {
                                         <li>
-                                            <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/PendingApprovals">
-                                                <i class="fas fa-tasks"></i> Phê Duyệt YC
+                                            <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/ManagerReview">
+                                                <i class="fas fa-user-check"></i> Xét Duyệt YC Từ Staff
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/ManagerForwardedRequests">
+                                                <i class="fas fa-paper-plane"></i> YC Đã Gửi Lên EVM
                                             </a>
                                         </li>
                                     }
-                                    @* Admin quản lý tất cả phân bổ *@
+
+                           
+                                    @if (User.IsInRole("4"))
+                                    {
+                                        <li>
+                                            <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/PendingApprovals">
+                                                <i class="fas fa-clipboard-check"></i> Phê Duyệt YC Từ Manager
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/ManageAllocations">
+                                                <i class="fas fa-truck"></i> Quản Lý Vận Chuyển
+                                            </a>
+                                        </li>
+                                    }
+
+                            
                                     @if (User.IsInRole("1"))
                                     {
                                         <li>
                                             <a class="dropdown-item ev-dropdown-item" asp-page="/Allocation/ManageAllocations">
-                                                <i class="fas fa-boxes"></i> Quản Lý Phân Bổ
+                                                <i class="fas fa-boxes"></i> Quản Lý Tất Cả Phân Bổ
                                             </a>
                                         </li>
                                     }
-                                    <li><a class="dropdown-item ev-dropdown-item" asp-page="/DealersManagement/Index"><i class="fas fa-building"></i> Đại lý</a></li>
                                 </ul>
                             </li>
 
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle ev-nav-link" href="#" id="reportDropdown" role="button" data-bs-toggle="dropdown">
                                     <i class="fas fa-chart-bar"></i> Báo Cáo
-                                </a>
+                                ></a>
                                 <ul class="dropdown-menu ev-dropdown-menu">
                                     <li>
                                         <a class="dropdown-item ev-dropdown-item" href="/Report/SalesSummary">
@@ -146,6 +167,21 @@
                                 <li class="nav-item">
                                     <a class="nav-link ev-nav-link" asp-page="/ActivityLogs/Index">
                                         <i class="fas fa-history"></i> Activity Logs
+                                    </a>
+                                </li>
+                            }
+                            @if (User.IsInRole("4"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-page="/Allocation/PendingApprovals">
+                                        <i class="fas fa-clipboard-check"></i>
+                                        <span>Phê Duyệt Phân Bổ</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-page="/Allocation/ManageAllocations">
+                                        <i class="fas fa-truck"></i>
+                                        <span>Quản Lý Phân Bổ</span>
                                     </a>
                                 </li>
                             }
