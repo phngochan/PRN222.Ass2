@@ -26,8 +26,9 @@ public class CreateModel : PageModel
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
         ICustomerService customerService,
-        IHubContext<TestDriveHub> hubContext,
-        ILogger<CreateModel> logger)
+        ILogger<CreateModel> logger, 
+        IHubContext<ActivityLogHub> activityLogHubContext,
+        IHubContext<TestDriveHub> hubContext) : base(logService)
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;

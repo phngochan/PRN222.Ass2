@@ -24,8 +24,9 @@ public class EditModel : PageModel
     public EditModel(
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
-        IHubContext<TestDriveHub> hubContext,
-        ILogger<EditModel> logger)
+        ILogger<EditModel> logger,
+        IHubContext<ActivityLogHub> activityLogHubContext,
+        IHubContext<TestDriveHub> hubContext) : base(logService)
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;
