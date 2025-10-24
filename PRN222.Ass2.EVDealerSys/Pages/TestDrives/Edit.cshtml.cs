@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
 
+using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.TestDrive;
 using PRN222.Ass2.EVDealerSys.Hubs;
@@ -14,7 +10,7 @@ using PRN222.Ass2.EVDealerSys.Models;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.TestDrives;
 
-public class EditModel : PageModel
+public class EditModel : BaseCrudPageModel
 {
     private readonly ITestDriveService _testDriveService;
     private readonly IVehicleService _vehicleService;
@@ -22,10 +18,10 @@ public class EditModel : PageModel
     private readonly ILogger<EditModel> _logger;
 
     public EditModel(
+        IActivityLogService logService,
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
         ILogger<EditModel> logger,
-        IHubContext<ActivityLogHub> activityLogHubContext,
         IHubContext<TestDriveHub> hubContext) : base(logService)
     {
         _testDriveService = testDriveService;
@@ -68,7 +64,7 @@ public class EditModel : PageModel
     {
         // Debug logging
         _logger.LogInformation("Edit OnPostAsync called with id={Id}, Form.Id={FormId}", id, Form.Id);
-        _logger.LogInformation("Form values: VehicleId={VehicleId}, CustomerId={CustomerId}, ScheduledDate={ScheduledDate}, Status={Status}", 
+        _logger.LogInformation("Form values: VehicleId={VehicleId}, CustomerId={CustomerId}, ScheduledDate={ScheduledDate}, Status={Status}",
             Form.VehicleId, Form.CustomerId, Form.ScheduledDate, Form.Status);
 
         await LoadVehiclesAsync();
@@ -76,7 +72,7 @@ public class EditModel : PageModel
 
         if (!ModelState.IsValid)
         {
-            _logger.LogWarning("ModelState is invalid. Errors: {Errors}", 
+            _logger.LogWarning("ModelState is invalid. Errors: {Errors}",
                 string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             return Page();
         }
@@ -150,14 +146,14 @@ public class EditModel : PageModel
             Status = Form.Status
         };
 
-        _logger.LogInformation("DTO created: Id={Id}, VehicleId={VehicleId}, CustomerId={CustomerId}, StartTime={StartTime}, EndTime={EndTime}, Status={Status}", 
+        _logger.LogInformation("DTO created: Id={Id}, VehicleId={VehicleId}, CustomerId={CustomerId}, StartTime={StartTime}, EndTime={EndTime}, Status={Status}",
             dto.Id, dto.VehicleId, dto.CustomerId, dto.StartTime, dto.EndTime, dto.Status);
 
         try
         {
             var result = await _testDriveService.UpdateAsync(dto);
             _logger.LogInformation("UpdateAsync completed. Result: {ResultId}", result?.Id);
-            
+
             // Send real-time notification via SignalR
             await _hubContext.Clients.All.SendAsync("TestDriveUpdated", new
             {
@@ -172,9 +168,9 @@ public class EditModel : PageModel
                 statusName = GetStatusName(result.Status ?? 2),
                 timestamp = DateTime.Now
             });
-            
+
             _logger.LogInformation("Test drive updated and SignalR notification sent: {Id}", result.Id);
-            
+
             TempData["SuccessMessage"] = "Cập nhật lịch thử xe thành công.";
             return RedirectToPage("./Index");
         }

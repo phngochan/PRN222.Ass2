@@ -1,13 +1,14 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
+
 using PRN222.Ass2.EVDealerSys.Base.BasePageModels;
 using PRN222.Ass2.EVDealerSys.BLL.Interfaces;
 using PRN222.Ass2.EVDealerSys.BusinessObjects.DTO.TestDrive;
 using PRN222.Ass2.EVDealerSys.Hubs;
 using PRN222.Ass2.EVDealerSys.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
 namespace PRN222.Ass2.EVDealerSys.Pages.TestDrives;
 
 [Authorize(Roles = "1,2,3")] // Admin, Manager, Staff có thể xem lịch thử xe
@@ -18,12 +19,11 @@ public class IndexModel : BaseCrudPageModel
     private readonly IHubContext<TestDriveHub> _testDriveHubContext;
     private readonly ILogger<IndexModel> _logger;
 
-    public IndexModel(
+    public IndexModel(IActivityLogService logService,
         ITestDriveService testDriveService,
         IVehicleService vehicleService,
         ILogger<IndexModel> logger,
-        IHubContext<TestDriveHub> testDriveHubContext,
-        IHubContext<ActivityLogHub> activityLogHubContext) : base(logService)
+        IHubContext<TestDriveHub> testDriveHubContext) : base(logService)
     {
         _testDriveService = testDriveService;
         _vehicleService = vehicleService;
@@ -64,25 +64,25 @@ public class IndexModel : BaseCrudPageModel
                 TempData["ErrorMessage"] = "Không tìm thấy lịch thử xe.";
                 return RedirectToPage(new { SearchTerm, FilterStatus, FilterDate = FilterDate?.ToString("yyyy-MM-dd"), FilterVehicle });
             }
-            
+
             var oldStatus = testDrive.Status;
-            
+
             // **VALIDATION: Chỉ cho phép hoàn thành (status=3) hoặc không đến (status=6) sau khi qua giờ kết thúc**
             if ((status == 3 || status == 6) && oldStatus == 2)
             {
                 var testDriveEndDateTime = testDrive.ScheduledDate.Add(testDrive.EndTime);
                 if (DateTime.Now <= testDriveEndDateTime)
                 {
-                    TempData["ErrorMessage"] = status == 3 
+                    TempData["ErrorMessage"] = status == 3
                         ? $"Chỉ có thể đánh dấu hoàn thành sau khi qua giờ kết thúc ({testDriveEndDateTime:dd/MM/yyyy HH:mm})."
                         : $"Chỉ có thể đánh dấu 'Không đến' sau khi qua giờ kết thúc ({testDriveEndDateTime:dd/MM/yyyy HH:mm}).";
-                    
+
                     return RedirectToPage(new { SearchTerm, FilterStatus, FilterDate = FilterDate?.ToString("yyyy-MM-dd"), FilterVehicle });
                 }
             }
-            
+
             var updated = await _testDriveService.UpdateStatusAsync(id, status);
-            
+
             if (updated)
             {
                 var statusName = status switch
@@ -95,9 +95,9 @@ public class IndexModel : BaseCrudPageModel
                     6 => "Không đến",
                     _ => "Không xác định"
                 };
-                
+
                 // Send real-time notification via SignalR
-                await _hubContext.Clients.All.SendAsync("TestDriveStatusChanged", new
+                await _testDriveHubContext.Clients.All.SendAsync("TestDriveStatusChanged", new
                 {
                     testDriveId = id,
                     oldStatus,
@@ -107,10 +107,10 @@ public class IndexModel : BaseCrudPageModel
                     vehicleName = testDrive?.VehicleName,
                     timestamp = DateTime.Now
                 });
-                
-                _logger.LogInformation("Test drive status changed and SignalR notification sent: {Id} from {OldStatus} to {NewStatus}", 
+
+                _logger.LogInformation("Test drive status changed and SignalR notification sent: {Id} from {OldStatus} to {NewStatus}",
                     id, oldStatus, status);
-                
+
                 // Notify via SignalR
                 await _testDriveHubContext.Clients.All.SendAsync("TestDriveStatusUpdated", new
                 {
@@ -118,7 +118,7 @@ public class IndexModel : BaseCrudPageModel
                     newStatus = status,
                     statusName = statusName
                 });
-                
+
                 TempData["SuccessMessage"] = status switch
                 {
                     1 => "Cập nhật trạng thái thành chờ xác nhận.",
@@ -175,13 +175,13 @@ public class IndexModel : BaseCrudPageModel
             testDrive.Status = status;
 
             var updated = await _testDriveService.UpdateAsync(testDrive);
-            
+
             if (updated != null)
             {
                 var statusName = status == 4 ? "Đã hủy" : "Khách hàng hủy";
-                
+
                 await LogAsync("Cancel Test Drive", $"Cancelled Test Drive ID={id}, Status={statusName}, Reason: {cancelReason}");
-                
+
                 // Notify via SignalR
                 await _testDriveHubContext.Clients.All.SendAsync("TestDriveStatusUpdated", new
                 {
@@ -189,7 +189,7 @@ public class IndexModel : BaseCrudPageModel
                     newStatus = status,
                     statusName = statusName
                 });
-                
+
                 TempData["SuccessMessage"] = $"{statusName} thành công. Lý do: {cancelReason}";
             }
             else
