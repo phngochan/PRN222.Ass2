@@ -1,52 +1,45 @@
-@page
+@page "{id:int}"
 @model PRN222.Ass2.EVDealerSys.Pages.DealersManagement.EditModel
 @{
     ViewData["Title"] = "Chỉnh sửa đại lý";
 }
 
 <div class="container-fluid">
-    Header
-    <div class="mb-4">
-        <h2 class="text-primary mb-1">
-            <i class="fas fa-edit"></i> Chỉnh sửa đại lý
-        </h2>
-    </div>
-
     <div class="row">
         <div class="col-lg-8 mx-auto">
-            @if (Model.ViewModel.CustomerCount > 0 || Model.ViewModel.InventoryCount > 0 || Model.ViewModel.OrderCount > 0 || Model.ViewModel.UserCount > 0)
-            {
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <strong>Lưu ý:</strong> Đại lý này có dữ liệu liên quan:
-                    <ul class="mb-0 mt-2">
-                        @if (Model.ViewModel.CustomerCount > 0)
-                        {
-                            <li>@Model.ViewModel.CustomerCount khách hàng</li>
-                        }
-                        @if (Model.ViewModel.InventoryCount > 0)
-                        {
-                            <li>@Model.ViewModel.InventoryCount kho hàng</li>
-                        }
-                        @if (Model.ViewModel.OrderCount > 0)
-                        {
-                            <li>@Model.ViewModel.OrderCount đơn hàng</li>
-                        }
-                        @if (Model.ViewModel.UserCount > 0)
-                        {
-                            <li>@Model.ViewModel.UserCount người dùng</li>
-                        }
-                    </ul>
-                </div>
-            }
-
             <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-building"></i> Thông tin đại lý
+                <div class="card-header py-3 bg-primary">
+                    <h5 class="m-0 font-weight-bold text-white">
+                        <i class="fas fa-building"></i> Chỉnh sửa Đại lý - ID: @Model.ViewModel.Id
                     </h5>
                 </div>
                 <div class="card-body">
+                    @if (Model.ViewModel.CustomerCount > 0 || Model.ViewModel.InventoryCount > 0 || Model.ViewModel.OrderCount > 0 || Model.ViewModel.UserCount > 0)
+                    {
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Lưu ý:</strong> Đại lý này có dữ liệu liên quan:
+                            <ul class="mb-0 mt-2">
+                                @if (Model.ViewModel.CustomerCount > 0)
+                                {
+                                    <li>@Model.ViewModel.CustomerCount khách hàng</li>
+                                }
+                                @if (Model.ViewModel.InventoryCount > 0)
+                                {
+                                    <li>@Model.ViewModel.InventoryCount kho hàng</li>
+                                }
+                                @if (Model.ViewModel.OrderCount > 0)
+                                {
+                                    <li>@Model.ViewModel.OrderCount đơn hàng</li>
+                                }
+                                @if (Model.ViewModel.UserCount > 0)
+                                {
+                                    <li>@Model.ViewModel.UserCount người dùng</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
                     <form asp-page="Edit" method="post">
                         <input type="hidden" asp-for="ViewModel.Id" />
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
@@ -78,16 +71,18 @@
                             <span asp-validation-for="ViewModel.Region" class="text-danger small"></span>
                         </div>
 
-                        <div class="form-group mt-4">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Cập nhật
-                            </button>
-                            <a asp-page="Details" asp-route-id="@Model.ViewModel.Id" class="btn btn-info">
-                                <i class="fas fa-eye"></i> Xem chi tiết
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-page="./Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
                             </a>
-                            <a asp-page="Index" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Hủy
-                            </a>
+                            <div>
+                                <a asp-page="./Details" asp-route-id="@Model.ViewModel.Id" class="btn btn-info me-2">
+                                    <i class="fas fa-eye"></i> Xem chi tiết
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save"></i> Cập nhật
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -132,6 +127,16 @@
             border-color: #7ec883;
         }
 
+    .btn-success {
+        background-color: #6b9b76;
+        border-color: #6b9b76;
+    }
+
+        .btn-success:hover {
+            background-color: #5e936c;
+            border-color: #5e936c;
+        }
+
     .input-group-text {
         background-color: #e8ffd7;
         border-color: #93da97;
@@ -142,15 +147,6 @@
         border-color: #5e936c;
         box-shadow: 0 0 0 0.2rem rgba(62, 95, 68, 0.25);
     }
-
-    .breadcrumb-item a {
-        color: #3e5f44;
-        text-decoration: none;
-    }
-
-        .breadcrumb-item a:hover {
-            color: #5e936c;
-        }
 
     .alert-warning {
         background-color: #fff8e1;

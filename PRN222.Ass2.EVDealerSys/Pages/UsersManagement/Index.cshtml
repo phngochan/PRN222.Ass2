@@ -12,26 +12,10 @@
                 @if (User.IsInRole("1"))
                 {
                     <a asp-page="Create" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Thêm User mới
+                        <i class="fas fa-plus"></i> Thêm Người dùng mới
                     </a>
                 }
             </div>
-
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @TempData["SuccessMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
-
-            @if (TempData["ErrorMessage"] != null)
-            {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    @TempData["ErrorMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            }
 
             <!-- Search and Filter -->
             <div class="card mb-4">

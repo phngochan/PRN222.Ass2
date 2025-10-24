@@ -85,7 +85,7 @@ namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
 
             try
             {
-                var existingVehicle = await _vehicleService.GetVehicleByIdAsync(Input.Id);
+                var existingVehicle = await _vehicleService.GetVehicleByIdAsync(id);
                 if (existingVehicle == null)
                 {
                     SetError("Không tìm thấy xe để cập nhật");
@@ -103,12 +103,12 @@ namespace PRN222.Ass2.EVDealerSys.Pages.VehiclesManagement
                 var updatedVehicle = await _vehicleService.UpdateVehicleAsync(existingVehicle);
 
                 SetSuccess($"Xe {Input.VehicleModel} {Input.Version} đã được cập nhật thành công!");
-                await LogAsync("Update Vehicle", $"Updated vehicle ID: {Input.Id}");
+                await LogAsync("Update Vehicle", $"Updated vehicle ID: {id}");
 
                 // Gửi thông báo SignalR cho tất cả client
                 await _hubContext.Clients.All.SendAsync("VehicleUpdated", updatedVehicle.Id, updatedVehicle.Model);
 
-                return RedirectToPage("./Details", new { id = Input.Id });
+                return RedirectToPage("./Details", new { id = id });
             }
             catch (InvalidOperationException ex)
             {

@@ -166,7 +166,7 @@
                             @foreach (var dealer in Model.ViewModel.Dealers)
                             {
                                 <tr>
-                                    <td>@dealer.Id</td>
+                                    <td>#@dealer.Id</td>
                                     <td>
                                         <strong>@dealer.Name</strong>
                                     </td>
@@ -187,15 +187,15 @@
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <a asp-page="Details" asp-route-id="@dealer.Id"
+                                            <a asp-page="./Details" asp-route-id="@dealer.Id"
                                                class="btn btn-sm btn-info" title="Chi tiết">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a asp-page="Edit" asp-route-id="@dealer.Id"
+                                            <a asp-page="./Edit" asp-route-id="@dealer.Id"
                                                class="btn btn-sm btn-warning" title="Sửa">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a asp-page="Delete" asp-route-id="@dealer.Id"
+                                            <a asp-page="./Delete" asp-route-id="@dealer.Id"
                                                class="btn btn-sm btn-danger" title="Xóa">
                                                 <i class="fas fa-trash"></i>
                                             </a>
@@ -288,6 +288,10 @@
         color: #3e5f44 !important;
     }
 
+    .text-gray-300 {
+        color: #c5d9c9 !important;
+    }
+
     .text-success {
         color: #6b9b76 !important;
     }
@@ -354,6 +358,16 @@
         box-shadow: 0 0.15rem 1.75rem 0 rgba(62, 95, 68, 0.15) !important;
         border: none;
     }
+
+    .btn-success {
+        background-color: #6b9b76;
+        border-color: #6b9b76;
+    }
+
+        .btn-success:hover {
+            background-color: #5e936c;
+            border-color: #5e936c;
+        }
 </style>
 
 @section Scripts {
