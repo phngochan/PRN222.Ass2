@@ -41,4 +41,6 @@ public interface IAllocationService
     public string GetStatusText(int status);
     public string GetReasonText(int reason);
 
+    public Task<bool> MarkAsReceivedAsync(int allocationId, int userId);
+    public Task<(bool Success, string Message)> ConfirmReceivedAsync(int allocationId, int userId);
 }

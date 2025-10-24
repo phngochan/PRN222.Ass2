@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace PRN222.Ass2.EVDealerSys.Pages.Allocation;
 
-[Authorize(Roles = "1,4")] // CHỈ Admin và EVM Staff
+[Authorize(Roles = "1,2,4")] // Admin, Manager, và EVM Staff
 public class ManageAllocationsModel : PageModel
 {
     private readonly IAllocationService _allocationService;
@@ -35,8 +35,19 @@ public class ManageAllocationsModel : PageModel
     public async Task OnGetAsync()
     {
         // Role 4 (EVM) và Role 1 (Admin) xem TẤT CẢ yêu cầu
-        var allAllocations = await _allocationRepo.GetAllWithDetailsAsync();
-        AllRequests = allAllocations.Select(MapToDto).ToList();
+        // Role 2 (Manager) chỉ xem yêu cầu của dealer mình
+        if (User.IsInRole("2"))
+        {
+            var dealerId = int.Parse(User.FindFirstValue("DealerId") ?? "0");
+            var dealerAllocations = await _allocationRepo.GetByDealerIdAsync(dealerId);
+            AllRequests = dealerAllocations.Select(MapToDto).ToList();
+        }
+        else
+        {
+            var allAllocations = await _allocationRepo.GetAllWithDetailsAsync();
+            AllRequests = allAllocations.Select(MapToDto).ToList();
+        }
+        
         Requests = AllRequests;
 
         // Apply filters
@@ -83,6 +94,23 @@ public class ManageAllocationsModel : PageModel
         }
 
         var (success, message) = await _allocationService.UpdateDeliveryStatusAsync(allocationId, deliveryDate);
+        TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
+        return RedirectToPage();
+    }
+
+    // NEW: Handler cho Manager xác nhận nhận hàng
+    public async Task<IActionResult> OnPostConfirmReceivedAsync(int allocationId)
+    {
+        // Chỉ Role 2 (Manager) mới được xác nhận nhận hàng
+        if (!User.IsInRole("2"))
+        {
+            TempData["ErrorMessage"] = "Bạn không có quyền thực hiện thao tác này";
+            return RedirectToPage();
+        }
+
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+        var (success, message) = await _allocationService.ConfirmReceivedAsync(allocationId, userId);
+        
         TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
         return RedirectToPage();
     }

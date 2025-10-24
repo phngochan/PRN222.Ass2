@@ -14,6 +14,7 @@ public class ManagerReviewModel : PageModel
 
     public List<AllocationRequestDto> PendingRequests { get; set; } = new();
     public List<AllocationRequestDto> AllRequests { get; set; } = new();
+    public List<AllocationRequestDto> DeliveredRequests { get; set; } = new();  // NEW
 
     [BindProperty(SupportsGet = true)]
     public string ActiveTab { get; set; } = "pending";
@@ -32,6 +33,9 @@ public class ManagerReviewModel : PageModel
 
         // Lấy tất cả yêu cầu của dealer
         AllRequests = (await _allocationService.GetDealerRequestsAsync(dealerId)).ToList();
+
+        // NEW: Lấy các yêu cầu đã giao hàng chờ xác nhận (Status = 5: Delivered)
+        DeliveredRequests = AllRequests.Where(r => r.Status == 5).ToList();
 
         // Check stock cho mỗi yêu cầu
         foreach (var request in PendingRequests)
@@ -66,5 +70,16 @@ public class ManagerReviewModel : PageModel
 
         TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
         return RedirectToPage();
+    }
+
+    // NEW: Handler xác nhận đã nhận hàng
+    public async Task<IActionResult> OnPostConfirmReceivedAsync(int allocationId)
+    {
+        var managerId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+        
+        var (success, message) = await _allocationService.ConfirmReceivedAsync(allocationId, managerId);
+
+        TempData[success ? "SuccessMessage" : "ErrorMessage"] = message;
+        return RedirectToPage(new { ActiveTab = "delivered" });
     }
 }

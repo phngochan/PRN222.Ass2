@@ -20,6 +20,22 @@
     }
 </div>
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <!-- Statistics -->
 <div class="row mb-4">
     <div class="col-md-3">
@@ -132,7 +148,7 @@
                                 }
                             </td>
                             <td>
-                                @* Chỉ Role 4 (EVM Staff) mới có thể xuất kho khi status = 2 (Approved) *@
+                                @* Role 4 (EVM Staff): Xuất kho khi status = 2 (Approved) *@
                                 @if (User.IsInRole("4") && request.Status == 2)
                                 {
                                     <form method="post" asp-page-handler="Fulfill" class="d-inline">
@@ -142,12 +158,23 @@
                                         </button>
                                     </form>
                                 }
-                                @if (request.Status == 3)
+                                
+                                @* Role 4 (EVM Staff): Xác nhận giao hàng khi status = 4 (InTransit) *@
+                                @if (User.IsInRole("4") && request.Status == 4)
                                 {
                                     <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#deliverModal-@request.Id" title="Xác nhận giao hàng">
                                         <i class="fas fa-box-open"></i> Giao hàng
                                     </button>
                                 }
+                                
+                                @* NEW: Role 2 (Manager): Xác nhận đã nhận hàng khi status = 5 (Delivered) *@
+                                @if (User.IsInRole("2") && request.Status == 5)
+                                {
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#confirmReceivedModal-@request.Id" title="Xác nhận đã nhận hàng">
+                                        <i class="fas fa-check-double"></i> Xác nhận nhận
+                                    </button>
+                                }
+                                
                                 <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detailModal-@request.Id">
                                     <i class="fas fa-eye"></i>
                                 </button>
@@ -160,7 +187,7 @@
     </div>
 </div>
 
-<!-- Detail & Deliver Modals -->
+<!-- Detail & Action Modals -->
 @foreach (var request in Model.Requests)
 {
     <!-- Detail Modal -->
@@ -210,8 +237,8 @@
         </div>
     </div>
 
-    <!-- Deliver Modal -->
-    @if (request.Status == 3)
+    <!-- Deliver Modal (Role 4 - EVM Staff) -->
+    @if (User.IsInRole("4") && request.Status == 4)
     {
         <div class="modal fade" id="deliverModal-@request.Id" tabindex="-1">
             <div class="modal-dialog">
@@ -220,7 +247,7 @@
                         <input type="hidden" name="allocationId" value="@request.Id" />
                         <div class="modal-header bg-success text-white">
                             <h5 class="modal-title"><i class="fas fa-check-circle"></i> Xác Nhận Giao Hàng</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
                             <p>Xác nhận xe đã được giao đến <strong>@request.DealerName</strong>?</p>
@@ -231,11 +258,60 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <button type="submit" class="btn btn-success">Xác Nhận</button>
+                            <button type="submit" class="btn btn-success">Xác Nhận Giao Hàng</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     }
+
+    <!-- NEW: Confirm Received Modal (Role 2 - Manager) -->
+    @if (User.IsInRole("2") && request.Status == 5)
+    {
+        <div class="modal fade" id="confirmReceivedModal-@request.Id" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" asp-page-handler="ConfirmReceived">
+                        <input type="hidden" name="allocationId" value="@request.Id" />
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title"><i class="fas fa-check-double"></i> Xác Nhận Đã Nhận Hàng</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Xác nhận rằng dealer đã nhận đủ <strong>@request.Quantity xe @request.VehicleModel @request.VehicleVersion</strong>
+                            </div>
+                            <p><strong>Thông tin lô hàng:</strong></p>
+                            <ul>
+                                <li>Số lượng: @request.Quantity xe</li>
+                                <li>Màu: @(request.RequestedColor ?? "Không yêu cầu")</li>
+                                <li>Ngày giao: @(request.DeliveryDate?.ToString("dd/MM/yyyy") ?? "N/A")</li>
+                            </ul>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i> Sau khi xác nhận, số lượng xe sẽ được cập nhật vào kho dealer.
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check-double"></i> Xác Nhận Đã Nhận
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@section Scripts {
+    <script>
+        $(function () {
+            // Ẩn alert sau 5s
+            setTimeout(function () { 
+                $('.alert').fadeOut('slow'); 
+            }, 5000);
+        });
+    </script>
 }

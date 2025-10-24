@@ -410,6 +410,9 @@ public class AllocationService : IAllocationService
             if (allocation == null)
                 return (false, "Không tìm thấy yêu cầu");
 
+            if (allocation.Status != (int)AllocationStatus.Approved)
+                return (false, "Chỉ có thể vận chuyển yêu cầu đã được phê duyệt");
+
             allocation.Status = (int)AllocationStatus.InTransit;
             allocation.ShipmentDate = shipmentDate;
             await _allocationRepo.UpdateAsync(allocation);
@@ -430,6 +433,34 @@ public class AllocationService : IAllocationService
             if (allocation == null)
                 return (false, "Không tìm thấy yêu cầu");
 
+            if (allocation.Status != (int)AllocationStatus.InTransit)
+                return (false, "Chỉ có thể giao hàng khi đang vận chuyển");
+
+            // Chỉ đánh dấu "Đã giao" - chưa cập nhật kho
+            allocation.Status = (int)AllocationStatus.Delivered;
+            allocation.DeliveryDate = deliveryDate;
+            await _allocationRepo.UpdateAsync(allocation);
+
+            return (true, "Đã giao hàng. Chờ dealer xác nhận nhận hàng.");
+        }
+        catch (Exception ex)
+        {
+            return (false, $"Lỗi: {ex.InnerException?.Message ?? ex.Message}");
+        }
+    }
+
+    public async Task<(bool Success, string Message)> ConfirmReceivedAsync(int allocationId, int userId)
+    {
+        try
+        {
+            var allocation = await _allocationRepo.GetByIdWithDetailsAsync(allocationId);
+            if (allocation == null)
+                return (false, "Không tìm thấy yêu cầu");
+
+            if (allocation.Status != (int)AllocationStatus.Delivered)
+                return (false, "Chỉ có thể xác nhận nhận hàng khi đã được giao");
+
+            // Cập nhật kho dealer
             var dealerStock = _inventoryRepo.GetByVehicle(
                 allocation.VehicleId ?? 0, 
                 3, // DealerStock = 3
@@ -454,11 +485,12 @@ public class AllocationService : IAllocationService
 
             await _inventoryRepo.SaveAsync();
 
-            allocation.Status = (int)AllocationStatus.Delivered;
-            allocation.DeliveryDate = deliveryDate;
+            // Cập nhật status và thời gian nhận hàng thực tế
+            allocation.Status = (int)AllocationStatus.Received;
+            allocation.DeliveryDate = DateTime.Now; // Ghi đè thời gian thực tế nhận hàng
             await _allocationRepo.UpdateAsync(allocation);
 
-            return (true, "Giao hàng thành công. Đã cập nhật kho đại lý.");
+            return (true, "Xác nhận nhận hàng thành công. Đã cập nhật kho đại lý.");
         }
         catch (Exception ex)
         {
@@ -479,8 +511,9 @@ public class AllocationService : IAllocationService
         2 => "Đã phê duyệt",
         3 => "Từ chối",
         4 => "Đang vận chuyển",
-        5 => "Đã giao",
-        6 => "Đã hủy",
+        5 => "Đã giao hàng",
+        6 => "Đã nhận hàng",  // Changed from "Đã hủy"
+        7 => "Đã hủy",
         _ => "Không xác định"
     };
 
@@ -543,5 +576,11 @@ public class AllocationService : IAllocationService
     {
         var allocations = await _allocationRepo.GetAllWithDetailsAsync();
         return allocations.Select(MapToDto);
+    }
+
+    public async Task<bool> MarkAsReceivedAsync(int allocationId, int userId)
+    {
+        var (success, _) = await ConfirmReceivedAsync(allocationId, userId);
+        return success;
     }
 }

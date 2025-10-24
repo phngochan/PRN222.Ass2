@@ -37,6 +37,12 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link @(Model.ActiveTab == "delivered" ? "active" : "")" href="?ActiveTab=delivered">
+                <i class="fas fa-truck"></i> Đã Giao Hàng
+                <span class="badge bg-info">@Model.DeliveredRequests.Count</span>
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link @(Model.ActiveTab == "all" ? "active" : "")" href="?ActiveTab=all">
                 <i class="fas fa-list"></i> Tất Cả Yêu Cầu
                 <span class="badge bg-secondary">@Model.AllRequests.Count</span>
@@ -81,7 +87,7 @@
 
                                 <hr />
 
-                                <!-- APPROVE FORM: tắt HTML5 validation -->
+                                <!-- APPROVE FORM -->
                                 <form method="post" asp-page-handler="Approve" class="mb-2 allocation-form" novalidate>
                                     <input type="hidden" name="allocationId" value="@request.Id" />
                                     <div class="mb-2">
@@ -95,7 +101,7 @@
                                     </button>
                                 </form>
 
-                                <!-- NÚT MỞ MODAL: chặn kích hoạt validation của form khác -->
+                                <!-- REJECT BUTTON -->
                                 <button type="button"
                                         class="btn btn-danger btn-sm w-100"
                                         data-bs-toggle="modal"
@@ -104,7 +110,7 @@
                                     <i class="fas fa-times"></i> Từ Chối
                                 </button>
 
-                                <!-- REJECT MODAL: backdrop static + form novalidate, bỏ required -->
+                                <!-- REJECT MODAL -->
                                 <div class="modal fade" id="rejectModal@(request.Id)" tabindex="-1"
                                      data-bs-backdrop="static" data-bs-keyboard="false">
                                     <div class="modal-dialog">
@@ -140,7 +146,54 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!-- /REJECT MODAL -->
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+    else if (Model.ActiveTab == "delivered")
+    {
+        <!-- NEW TAB: Đã Giao Hàng - Chờ Xác Nhận Nhận -->
+        @if (!Model.DeliveredRequests.Any())
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Không có hàng nào đang chờ xác nhận nhận.
+            </div>
+        }
+        else
+        {
+            <div class="row">
+                @foreach (var request in Model.DeliveredRequests)
+                {
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-box-open"></i> @request.VehicleModel @request.VehicleVersion
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Số lượng:</strong> @request.Quantity xe</p>
+                                <p><strong>Màu:</strong> @(request.RequestedColor ?? "Không yêu cầu")</p>
+                                <p><strong>Ngày yêu cầu:</strong> @request.RequestDate.ToString("dd/MM/yyyy")</p>
+                                <p><strong>Ngày phê duyệt:</strong> @(request.AllocationDate?.ToString("dd/MM/yyyy") ?? "N/A")</p>
+                                <p><strong>Ngày xuất kho:</strong> @(request.ShipmentDate?.ToString("dd/MM/yyyy") ?? "N/A")</p>
+                                <p><strong>Ngày giao hàng:</strong> @(request.DeliveryDate?.ToString("dd/MM/yyyy") ?? "N/A")</p>
+
+                                <div class="alert alert-success">
+                                    <i class="fas fa-shipping-fast"></i> Hàng đã được giao. Vui lòng xác nhận đã nhận!
+                                </div>
+
+                                <hr />
+
+                                <form method="post" asp-page-handler="ConfirmReceived" class="allocation-form">
+                                    <input type="hidden" name="allocationId" value="@request.Id" />
+                                    <button type="submit" class="btn btn-primary btn-sm w-100 submit-btn">
+                                        <i class="fas fa-check-double"></i> Xác Nhận Đã Nhận Hàng
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -178,6 +231,9 @@
                                 1 => "info",
                                 2 => "success",
                                 3 => "danger",
+                                4 => "primary",
+                                5 => "success",
+                                6 => "secondary",
                                 _ => "secondary"
                             })">@request.StatusText</span>
                         </td>
@@ -219,7 +275,7 @@
                 }
                 $submitBtn.prop('disabled', true);
 
-                // Nếu là reject-form thì đóng modal ngay sau khi bấm submit (để UX mượt)
+                // Nếu là reject-form thì đóng modal ngay sau khi bấm submit
                 if ($form.hasClass('reject-form')) {
                     $form.closest('.modal').modal('hide');
                 }
@@ -234,7 +290,7 @@
                     $submitBtn.html('<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...');
                 }
 
-                // Fallback re-enable sau 5s (trong trường hợp server trả lỗi không bắt được)
+                // Fallback re-enable sau 5s
                 setTimeout(function () {
                     $submitBtn.prop('disabled', false);
                     if ($btnText.length && $btnSpinner.length) {
